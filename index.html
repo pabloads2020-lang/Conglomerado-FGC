@@ -462,9 +462,13 @@ let currentSort = 'id';
 let currentFilter = '';
 let pendingBaseEmissores = [];
 let pendingBaseConglomerado = [];
+let clientAlerts = {};
 
 // ====================== INICIALIZAÇÃO DA BASE ======================
 function initBase() {
+    const alertStyle = document.createElement('style');
+    alertStyle.textContent = `.cr-alert-badges{display:inline-flex;gap:3px;align-items:center;margin-left:6px}.cr-alert{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:.68rem;font-weight:700;line-height:1.5;white-space:nowrap}.cr-alert.reprov{background:rgba(192,57,43,.15);color:#E74C3C;border:1px solid rgba(192,57,43,.3)}.cr-alert.semcob{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}.cr-alert.fgcexc{background:rgba(142,68,173,.15);color:#9B59B6;border:1px solid rgba(142,68,173,.3)}`;
+    document.head.appendChild(alertStyle);
     try {
         if (BASE_EMISSORES_JSON && BASE_EMISSORES_JSON !== '%%BASE_EMISSORES%%') {
             baseEmissores = JSON.parse(BASE_EMISSORES_JSON);
@@ -639,6 +643,35 @@ function loadPosicoes(file) {
         const clientsMap = new Map();
         posicoesData.forEach(r => { clientsMap.set(r.clientId, (clientsMap.get(r.clientId) || 0) + 1); });
         currentClientsList = Array.from(clientsMap.entries()).map(([id, count]) => ({ id, count }));
+        // Compute per-client alerts
+        clientAlerts = {};
+        posicoesData.forEach(r => {
+            if (!clientAlerts[r.clientId]) clientAlerts[r.clientId] = { reprovado: false, semCobertura: false, fgcExcedido: false };
+            const em = findEmissor(r.issuer);
+            const cond = em ? em.condicao : 'Sem Cobertura';
+            if (cond === 'Reprovado') clientAlerts[r.clientId].reprovado = true;
+            if (cond === 'Sem Cobertura') clientAlerts[r.clientId].semCobertura = true;
+        });
+        
+        // Compute FGC exceeded per client (using marketType available on raw data)
+        const fgcLimit = 250000;
+        const clientFgcMap = {};
+        posicoesData.forEach(r => {
+            if (!isFGCEligible(r.marketType)) return;
+            if (!clientFgcMap[r.clientId]) clientFgcMap[r.clientId] = {};
+            const cong = findConglomerado(r.issuer);
+            const key = cong ? cong.conglomerado : r.issuer;
+            if (!clientFgcMap[r.clientId][key]) clientFgcMap[r.clientId][key] = 0;
+            clientFgcMap[r.clientId][key] += (r.netValue || 0);
+        });
+        Object.keys(clientFgcMap).forEach(cid => {
+            const groups = clientFgcMap[cid];
+            const excedido = Object.values(groups).some(v => v > fgcLimit);
+            if (excedido) {
+                if (!clientAlerts[cid]) clientAlerts[cid] = { reprovado: false, semCobertura: false, fgcExcedido: false };
+                clientAlerts[cid].fgcExcedido = true;
+            }
+        });
         setStatus('stPos', 'ok', `✓ ${posicoesData.length} posições · ${currentClientsList.length} clientes`, true, 'pos');
         renderClientsList();
     });
@@ -894,8 +927,12 @@ function renderClientsList() {
     grid.innerHTML = filtered.map(c => {
         const isActive = c.id === currentClient;
         const nIssuers = issuerCount[c.id] ? issuerCount[c.id].size : '—';
+        const alerts = clientAlerts[c.id] || {};
+        const alertBadges = (alerts.reprovado || alerts.semCobertura || alerts.fgcExcedido)
+            ? `<span class="cr-alert-badges">${alerts.reprovado ? '<span class="cr-alert reprov">Reprovado</span>' : ''}${alerts.semCobertura ? '<span class="cr-alert semcob">Sem Cobertura</span>' : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc">FGC Excedido</span>' : ''}</span>`
+            : '';
         return `<div class="client-row${isActive?' active':''}" data-id="${c.id}" onclick="selectClient('${c.id}')">
-            <div class="cr-id"><span class="cr-id-dot"></span>${esc(c.id)}</div>
+            <div class="cr-id"><span class="cr-id-dot"></span>${esc(c.id)}${alertBadges}</div>
             <div class="cr-pos">${c.count}</div>
             <div class="cr-label">${nIssuers}</div>
             <div class="cr-arrow">${chevron}</div>
@@ -923,7 +960,7 @@ function setupClientUI() {
 
 function clearFile(target) {
     if (target === 'pos') {
-        posicoesData = []; currentClientsList = [];
+        posicoesData = []; currentClientsList = []; clientAlerts = {};
         document.getElementById('filePos').value = '';
         document.getElementById('clientsSection').style.display = 'none';
         document.getElementById('clientsGrid').innerHTML = '';
