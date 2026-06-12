@@ -221,6 +221,18 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .client-row:hover .cr-arrow,.client-row.active .cr-arrow{opacity:1;}
 .cr-arrow svg{stroke:#C5A059;}
 .clients-table-footer{padding:8px 14px;border-top:1px solid var(--bd);font-size:.65rem;color:var(--tx3);text-align:right;background:var(--bg);}
+.alert-filter-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.alert-filter-btn{background:transparent;border:1px solid var(--bd);border-radius:6px;padding:5px 10px;font-size:.68rem;font-weight:600;color:var(--tx3);cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:5px;}
+.alert-filter-btn:hover{border-color:var(--bd2);color:var(--tx2);}
+.alert-filter-btn.active-reprov{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.4);color:#E74C3C;}
+.alert-filter-btn.active-semcob{background:rgba(212,130,10,.12);border-color:rgba(212,130,10,.4);color:#E67E22;}
+.alert-filter-btn.active-fgc{background:rgba(142,68,173,.12);border-color:rgba(142,68,173,.4);color:#BB8FCE;}
+.cr-alert-badges{display:inline-flex;gap:5px;flex-wrap:wrap;margin-left:4px;align-items:center;}
+.cr-alert{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.69rem;font-weight:600;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.cr-alert-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block;}
+.cr-alert.reprov{background:rgba(192,57,43,.12);color:#E74C3C;border:1px solid rgba(192,57,43,.25);}
+.cr-alert.semcob{background:rgba(212,130,10,.12);color:#E67E22;border:1px solid rgba(212,130,10,.25);}
+.cr-alert.fgcexc{background:rgba(142,68,173,.12);color:#BB8FCE;border:1px solid rgba(142,68,173,.25);}
 
 /* Results */
 .result-panel{background:var(--bg-card);border:1px solid var(--bd);border-radius:16px;overflow:hidden;}
@@ -347,7 +359,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 <div class="page">
 
     <!-- Status da base embutida + botão atualizar -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;">
 
         <div class="base-status-bar" id="ucPosicoes" style="margin-bottom:0;">
             <input type="file" id="filePos" accept=".xlsx,.xls" style="display:none">
@@ -356,6 +368,16 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
             <button class="btn-update-base" id="dzPos">
                 <span class="material-symbols-outlined" style="font-size:14px;">upload</span>
                 Carregar Excel
+            </button>
+        </div>
+
+        <div class="base-status-bar" id="ucCadastro" style="margin-bottom:0;">
+            <input type="file" id="fileCadastro" accept=".xlsx,.xls" style="display:none">
+            <span class="base-status-label">Nome dos Clientes:</span>
+            <span class="st idle" id="stCadastroLabel">Aguardando arquivo…</span>
+            <button class="btn-update-base" id="dzCadastro">
+                <span class="material-symbols-outlined" style="font-size:14px;">badge</span>
+                Carregar Cadastro
             </button>
         </div>
 
@@ -380,6 +402,10 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
             <div class="sort-buttons">
                 <button class="sort-btn" data-sort="id">Por ID</button>
                 <button class="sort-btn" data-sort="count">Por posições</button>
+            </div>
+            <div class="alert-filter-btns">
+                <button class="alert-filter-btn" id="filterReprov" data-alert="reprovado">⚠ Reprovado</button>
+                <button class="alert-filter-btn" id="filterSemCob" data-alert="semCobertura">⚠ Sem Cobertura</button>
             </div>
             <span class="clients-stats" id="clientsStats"></span>
         </div>
@@ -460,9 +486,11 @@ let currentProcessedData = [];
 let currentClientsList = [];
 let currentSort = 'id';
 let currentFilter = '';
+let currentAlertFilter = null;
 let pendingBaseEmissores = [];
 let pendingBaseConglomerado = [];
 let clientAlerts = {};
+let clientNames = {};
 
 // ====================== INICIALIZAÇÃO DA BASE ======================
 function initBase() {
@@ -646,11 +674,11 @@ function loadPosicoes(file) {
         // Compute per-client alerts
         clientAlerts = {};
         posicoesData.forEach(r => {
-            if (!clientAlerts[r.clientId]) clientAlerts[r.clientId] = { reprovado: false, semCobertura: false, fgcExcedido: false };
+            if (!clientAlerts[r.clientId]) clientAlerts[r.clientId] = { reprovadoCount: 0, semCoberturaCount: 0, fgcExcedido: false };
             const em = findEmissor(r.issuer);
             const cond = em ? em.condicao : 'Sem Cobertura';
-            if (cond === 'Reprovado') clientAlerts[r.clientId].reprovado = true;
-            if (cond === 'Sem Cobertura') clientAlerts[r.clientId].semCobertura = true;
+            if (cond === 'Reprovado') clientAlerts[r.clientId].reprovadoCount++;
+            if (cond === 'Sem Cobertura') clientAlerts[r.clientId].semCoberturaCount++;
         });
         
         // Compute FGC exceeded per client (using marketType available on raw data)
@@ -912,7 +940,13 @@ function renderClientsList() {
     if (!currentClientsList.length) { section.style.display = 'none'; return; }
     section.style.display = 'block';
 
-    let filtered = currentClientsList.filter(c => c.id.toString().includes(currentFilter));
+    let filtered = currentClientsList.filter(c => {
+        const clientName = clientNames[c.id] || '';
+        if (!c.id.toString().includes(currentFilter) && !clientName.toLowerCase().includes(currentFilter.toLowerCase())) return false;
+        if (currentAlertFilter === 'reprovado') return (clientAlerts[c.id] || {}).reprovadoCount > 0;
+        if (currentAlertFilter === 'semCobertura') return (clientAlerts[c.id] || {}).semCoberturaCount > 0;
+        return true;
+    });
     if (currentSort === 'id') {
         filtered.sort((a,b) => { const na=Number(a.id), nb=Number(b.id); return !isNaN(na)&&!isNaN(nb) ? na-nb : String(a.id).localeCompare(String(b.id)); });
     } else { filtered.sort((a,b) => b.count - a.count); }
@@ -928,11 +962,11 @@ function renderClientsList() {
         const isActive = c.id === currentClient;
         const nIssuers = issuerCount[c.id] ? issuerCount[c.id].size : '—';
         const alerts = clientAlerts[c.id] || {};
-        const alertBadges = (alerts.reprovado || alerts.semCobertura || alerts.fgcExcedido)
-            ? `<span class="cr-alert-badges">${alerts.reprovado ? '<span class="cr-alert reprov">Reprovado</span>' : ''}${alerts.semCobertura ? '<span class="cr-alert semcob">Sem Cobertura</span>' : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc">FGC Excedido</span>' : ''}</span>`
+        const alertBadges = (alerts.reprovadoCount > 0 || alerts.semCoberturaCount > 0 || alerts.fgcExcedido)
+            ? `<span class="cr-alert-badges">${alerts.reprovadoCount > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${alerts.reprovadoCount} ${alerts.reprovadoCount === 1 ? 'Reprovado' : 'Reprovados'}</span>` : ''}${alerts.semCoberturaCount > 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${alerts.semCoberturaCount} ${alerts.semCoberturaCount === 1 ? 'Sem Cobertura' : 'Sem Cobertura'}</span>` : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc"><span class="cr-alert-dot"></span>FGC Excedido</span>' : ''}</span>`
             : '';
         return `<div class="client-row${isActive?' active':''}" data-id="${c.id}" onclick="selectClient('${c.id}')">
-            <div class="cr-id"><span class="cr-id-dot"></span>${esc(c.id)}${alertBadges}</div>
+            <div class="cr-id"><span class="cr-id-dot"></span>${clientNames[c.id] ? `<span style="font-size:.62rem;font-weight:400;text-transform:uppercase;letter-spacing:.10em;color:var(--gold)">${esc(clientNames[c.id])}</span><span style="font-size:0.62rem;font-weight:400;margin-left:5px;font-family:'DM Mono',monospace;color:var(--gold);opacity:0.7;">${esc(c.id)}</span>` : esc(c.id)}${alertBadges}</div>
             <div class="cr-pos">${c.count}</div>
             <div class="cr-label">${nIssuers}</div>
             <div class="cr-arrow">${chevron}</div>
@@ -949,6 +983,22 @@ function setupClientUI() {
     if (searchInput) searchInput.addEventListener('input', e => { currentFilter = e.target.value.trim(); renderClientsList(); });
     sortBtns.forEach(btn => { btn.addEventListener('click', () => { currentSort = btn.getAttribute('data-sort'); sortBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderClientsList(); }); });
     document.querySelector('.sort-btn[data-sort="id"]').classList.add('active');
+    const alertFilterBtns = document.querySelectorAll('.alert-filter-btn');
+    alertFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const alert = btn.getAttribute('data-alert');
+            if (currentAlertFilter === alert) {
+                currentAlertFilter = null;
+                alertFilterBtns.forEach(b => b.className = 'alert-filter-btn');
+            } else {
+                currentAlertFilter = alert;
+                alertFilterBtns.forEach(b => b.className = 'alert-filter-btn');
+                const cls = alert === 'reprovado' ? 'active-reprov' : 'active-semcob';
+                btn.classList.add(cls);
+            }
+            renderClientsList();
+        });
+    });
 }
 
 (function(){
@@ -956,7 +1006,60 @@ function setupClientUI() {
     const inp = document.getElementById('filePos');
     if (btn) btn.addEventListener('click', () => inp.click());
     if (inp) inp.addEventListener('change', e => { if (e.target.files[0]) loadPosicoes(e.target.files[0]); });
+
+    const btnCad = document.getElementById('dzCadastro');
+    const inpCad = document.getElementById('fileCadastro');
+    if (btnCad) btnCad.addEventListener('click', () => inpCad.click());
+    if (inpCad) inpCad.addEventListener('change', e => { if (e.target.files[0]) loadCadastro(e.target.files[0]); });
 })();
+
+// ====================== CADASTRO DE CLIENTES ======================
+function loadCadastro(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+            clientNames = {};
+            let found = 0;
+            rows.forEach(row => {
+                const keys = Object.keys(row);
+                const codeKey = keys.find(k => /c[oó]d|codigo|code|client/i.test(k));
+                const nameKey = keys.find(k => /nome|name|raz[aã]o|cliente/i.test(k));
+                if (codeKey && nameKey) {
+                    const code = String(row[codeKey]).trim();
+                    const name = String(row[nameKey]).trim();
+                    if (code && name) { clientNames[code] = name; found++; }
+                }
+            });
+            const label = document.getElementById('stCadastroLabel');
+            const btn   = document.getElementById('dzCadastro');
+            if (found > 0) {
+                if (label) { label.className = 'st ok'; label.textContent = found + ' clientes carregados'; }
+                if (btn) {
+                    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">close</span> Limpar';
+                    btn.onclick = () => {
+                        clientNames = {};
+                        document.getElementById('fileCadastro').value = '';
+                        label.className = 'st idle'; label.textContent = 'Aguardando arquivo…';
+                        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">badge</span> Carregar Cadastro';
+                        btn.onclick = () => document.getElementById('fileCadastro').click();
+                        renderClientsList();
+                    };
+                }
+                renderClientsList();
+            } else {
+                if (label) { label.className = 'st error'; label.textContent = 'Colunas não reconhecidas'; }
+            }
+        } catch(err) {
+            const label = document.getElementById('stCadastroLabel');
+            if (label) { label.className = 'st error'; label.textContent = 'Erro ao ler arquivo'; }
+            console.error(err);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
 
 function clearFile(target) {
     if (target === 'pos') {
