@@ -248,6 +248,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .sp.banc{background:rgba(41,128,185,.12);color:#5DADE2;border:1px solid rgba(41,128,185,.25);}
 .sp.priv{background:rgba(142,68,173,.12);color:#BB8FCE;border:1px solid rgba(142,68,173,.25);}
 .sp-d{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.sp-pct{opacity:.65;font-weight:500;}
 .asset-list{padding:.6rem .8rem;}
 .asset-row{border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;overflow:hidden;}
 .asset-row.open{border-color:rgba(197,160,89,.3);}
@@ -1262,12 +1263,17 @@ function selectClient(cid) {
 
 function renderResult(data, cid) {
     const totalVal = data.reduce((s, r) => s + (r.netValue || 0), 0);
-    const nAprov = data.filter(r => r.condicao === 'Aprovado').length;
-    const nReprov = data.filter(r => r.condicao === 'Reprovado').length;
-    const nSemCob = data.filter(r => r.condicao === 'Sem Cobertura').length;
-    const nBanc = data.filter(r => r.tipoCredito === 'Bancário').length;
-    const nPriv = data.filter(r => r.tipoCredito === 'Privado').length;
-    const summary = `<div class="summary"><div class="sp total"><div class="sp-d"></div>${data.length} posições · ${fmtBRL(totalVal)}</div><div class="sp aprov"><div class="sp-d"></div>${nAprov} Aprovado${nAprov!==1?'s':''}</div><div class="sp reprov"><div class="sp-d"></div>${nReprov} Reprovado${nReprov!==1?'s':''}</div><div class="sp semcob"><div class="sp-d"></div>${nSemCob} Sem Cobertura</div><div class="sp banc"><div class="sp-d"></div>${nBanc} Bancário</div><div class="sp priv"><div class="sp-d"></div>${nPriv} Privado</div></div>`;
+    const patrimonioTotal = clientTotalPatrimonio[cid] || 0;
+    const grupoAprov = data.filter(r => r.condicao === 'Aprovado');
+    const grupoReprov = data.filter(r => r.condicao === 'Reprovado');
+    const grupoSemCob = data.filter(r => r.condicao === 'Sem Cobertura');
+    const grupoBanc = data.filter(r => r.tipoCredito === 'Bancário');
+    const grupoPriv = data.filter(r => r.tipoCredito === 'Privado');
+    const nAprov = grupoAprov.length, nReprov = grupoReprov.length, nSemCob = grupoSemCob.length;
+    const nBanc = grupoBanc.length, nPriv = grupoPriv.length;
+    const somaGrupo = arr => arr.reduce((s, r) => s + (r.netValue || 0), 0);
+    const pctOf = arr => patrimonioTotal > 0 ? `<span class="sp-pct"> · ${(somaGrupo(arr) / patrimonioTotal * 100).toFixed(1)}%</span>` : '';
+    const summary = `<div class="summary"><div class="sp total"><div class="sp-d"></div>${data.length} posições · ${fmtBRL(totalVal)}</div><div class="sp aprov"><div class="sp-d"></div>${nAprov} Aprovado${nAprov!==1?'s':''}${pctOf(grupoAprov)}</div><div class="sp reprov"><div class="sp-d"></div>${nReprov} Reprovado${nReprov!==1?'s':''}${pctOf(grupoReprov)}</div><div class="sp semcob"><div class="sp-d"></div>${nSemCob} Sem Cobertura${pctOf(grupoSemCob)}</div><div class="sp banc"><div class="sp-d"></div>${nBanc} Bancário${pctOf(grupoBanc)}</div><div class="sp priv"><div class="sp-d"></div>${nPriv} Privado${pctOf(grupoPriv)}</div></div>`;
 
     const rowsHtml = data.map((r, idx) => {
         const condClass = r.condicao === 'Aprovado' ? 'aprovado' : (r.condicao === 'Reprovado' ? 'reprovado' : 'semcob');
@@ -1303,7 +1309,6 @@ function renderResult(data, cid) {
     const fgcHtml = `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">🏦 Exposição Total (Ativos com Cobertura FGC)</div><div class="fgc-value">${fmtBRL(totalExposicao)}</div></div><div class="fgc-card"><div class="fgc-label">🛡️ Cobertura FGC (até R$ 250k por conglomerado)</div><div class="fgc-value">${fmtBRL(totalCoberto)}</div><div class="fgc-status">${pct}% da exposição</div></div><div class="fgc-card"><div class="fgc-label">⚠️ Exposição sem Cobertura FGC</div><div class="fgc-value coverage-excess">${fmtBRL(totalExcedente)}</div></div></div>${fgcRows.length > 0 ? `<div class="fgc-cong-table"><table><thead><tr><th>Conglomerado / Emissor</th><th>Valor Exposto</th><th>Status FGC</th><th>Valor Coberto</th><th>Excedente</th></tr></thead><tbody>${fgcRows.join('')}</tbody></table></div>` : '<div class="empty" style="padding:40px"><div class="empty-text">Nenhum ativo bancário elegível para FGC encontrado</div></div>'}`;
 
     // ====== Análise de Crédito Privado / Bancário (concentração por emissor vs peso máximo) ======
-    const patrimonioTotal = clientTotalPatrimonio[cid] || 0;
     function renderConcentracaoTab(tipoCredito) {
         const ativos = data.filter(r => r.tipoCredito === tipoCredito);
         if (!ativos.length) {
