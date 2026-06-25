@@ -227,6 +227,8 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .alert-filter-btn.active-reprov{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.4);color:#E74C3C;}
 .alert-filter-btn.active-semcob{background:rgba(212,130,10,.12);border-color:rgba(212,130,10,.4);color:#E67E22;}
 .alert-filter-btn.active-fgc{background:rgba(142,68,173,.12);border-color:rgba(142,68,173,.4);color:#BB8FCE;}
+.alert-filter-btn.active-conc{background:rgba(41,128,185,.12);border-color:rgba(41,128,185,.4);color:#5DADE2;}
+.cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3);}
 .cr-alert-badges{display:inline-flex;gap:5px;flex-wrap:wrap;margin-left:4px;align-items:center;}
 .cr-alert{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.69rem;font-weight:600;white-space:nowrap;font-family:'DM Sans',sans-serif;}
 .cr-alert-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block;}
@@ -287,9 +289,32 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .empty-icon{font-size:2.2rem;opacity:.35;margin-bottom:12px;}
 .empty-text{font-size:.82rem;color:var(--tx3);}
 .footer{text-align:center;font-size:.68rem;color:var(--tx3);padding:1.75rem;border-top:1px solid var(--bd);}
-.tab-bar{display:flex;border-bottom:1px solid var(--bd);padding:0 1.4rem;gap:24px;}
+.issuer-filter-wrap{background:var(--bg-card);border:1px solid var(--bd);border-radius:12px;margin-bottom:1.75rem;overflow:hidden;}
+.issuer-filter-header{display:flex;align-items:center;gap:10px;padding:.85rem 1.2rem;border-bottom:1px solid var(--bd);}
+.issuer-filter-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);}
+.issuer-search-box{background:var(--bg-card2);border:1px solid var(--bd);border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:8px;flex:1;max-width:420px;transition:border-color .15s;}
+.issuer-search-box:focus-within{border-color:rgba(197,160,89,.45);}
+.issuer-search-box input{background:transparent;border:none;color:var(--tx);font-size:.82rem;outline:none;width:100%;font-family:inherit;}
+.issuer-search-box input::placeholder{color:var(--tx3);}
+.issuer-clear-btn{background:transparent;border:none;color:var(--tx3);cursor:pointer;font-size:.72rem;padding:3px 8px;border-radius:6px;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.issuer-clear-btn:hover{color:#E74C3C;background:rgba(192,57,43,.1);}
+.issuer-results{display:none;padding:.8rem 1.2rem;}
+.issuer-results.visible{display:block;}
+.issuer-results-title{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--tx3);margin-bottom:.6rem;}
+.issuer-results-title span{color:var(--gold);font-size:.75rem;font-weight:700;}
+.issuer-clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.issuer-client-card{background:var(--bg-card2);border:1px solid var(--bd);border-radius:10px;padding:.65rem 1rem;cursor:pointer;transition:all .15s;}
+.issuer-client-card:hover{border-color:rgba(197,160,89,.4);background:var(--bg-card3);}
+.issuer-client-id{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:#C5A059;}
+.issuer-client-name{font-size:.65rem;color:var(--tx2);margin-top:2px;}
+.issuer-client-assets{font-size:.65rem;color:var(--tx3);margin-top:4px;}
+.issuer-no-results{font-size:.8rem;color:var(--tx3);padding:.5rem 0;font-style:italic;}
+.tab-bar{display:flex;align-items:center;border-bottom:1px solid var(--bd);padding:0 1.4rem;gap:24px;}
 .tab-btn{background:transparent;border:none;color:var(--tx2);font-size:.8rem;font-weight:500;padding:12px 0;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;}
 .tab-btn.active{color:#C5A059;border-bottom-color:#C5A059;}
+.tab-export-btn{display:flex;align-items:center;gap:6px;margin-left:auto;background:rgba(197,160,89,.10);border:1px solid rgba(197,160,89,.35);color:#C5A059;font-size:.74rem;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.tab-export-btn:hover{background:rgba(197,160,89,.18);border-color:rgba(197,160,89,.55);}
+.tab-export-btn:disabled{opacity:.5;cursor:default;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 .fgc-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;padding:1rem 1.4rem 0;}
@@ -433,6 +458,25 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 
     </div>
 
+    <!-- Filtro por Emissor -->
+    <div id="issuerFilterSection" style="display:none;margin-top:1.75rem;">
+        <div class="sec">Busca por Emissor</div>
+        <div class="issuer-filter-wrap">
+            <div class="issuer-filter-header">
+                <span class="issuer-filter-label">🔍 Emissor</span>
+                <div class="issuer-search-box">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="issuerSearch" placeholder="Digite o nome do emissor (ex: BTG, XP, Bradesco…)" autocomplete="off">
+                </div>
+                <button class="issuer-clear-btn" id="issuerClearBtn" style="display:none;" onclick="clearIssuerFilter()">✕ Limpar</button>
+            </div>
+            <div class="issuer-results" id="issuerResults">
+                <div class="issuer-results-title" id="issuerResultsTitle"></div>
+                <div class="issuer-clients-grid" id="issuerClientsGrid"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="clientsSection" style="display:none;margin-top:1.75rem;">
         <div class="sec">Selecionar Cliente</div>
         <div class="clients-toolbar">
@@ -448,6 +492,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
                 <button class="alert-filter-btn" id="filterReprov" data-alert="reprovado">⚠ Reprovado</button>
                 <button class="alert-filter-btn" id="filterSemCob" data-alert="semCobertura">⚠ Sem Cobertura</button>
                 <button class="alert-filter-btn" id="filterFGC" data-alert="fgc">⚠ FGC Excedido</button>
+                <button class="alert-filter-btn" id="filterConcentracao" data-alert="concentracao">📊 Conc. &gt;5%</button>
             </div>
             <div class="asset-type-filter">
                 <button class="sort-btn" id="assetTypeToggle">📊 Tipos de Ativos ▼</button>
@@ -526,6 +571,12 @@ const SENHA_HASH = '00d18d446243e49bf38a35ccdec9d541134b9596306a23b3db4f603b4c78
 // ====================== ESTADO GLOBAL ======================
 let posicoesData = [];
 let clientTotalPatrimonio = {}; // mapa: clientId -> TotalValue (aba posicao_total)
+let lastConcentracao5Data = []; // cache: linhas calculadas para export Excel da aba Concentração > 5%
+let lastFgcRows = []; // cache: linhas da aba FGC do cliente atual (para export)
+let lastCredPrivadoRows = []; // cache: linhas da aba Crédito Privado do cliente atual
+let lastCredBancarioRows = []; // cache: linhas da aba Crédito Bancário do cliente atual
+let lastRendaFixaData = []; // cache: posições processadas do cliente atual (aba Renda Fixa)
+let lastRendaFixaClient = null; // cache: id do cliente atualmente exibido
 let baseEmissores = [];
 let baseConglomerado = [];
 let currentClient = null;
@@ -535,6 +586,7 @@ let currentSort = 'id';
 let currentFilter = '';
 let currentAlertFilter = null;
 let currentFgcFilter = false; // novo estado para filtro FGC
+let currentConcentracaoFilter = false; // filtro: ativo > 5% do patrimônio
 let selectedAssetTypes = []; // novo estado para tipos de ativos selecionados
 let pendingBaseEmissores = [];
 let pendingBaseConglomerado = [];
@@ -545,7 +597,7 @@ let clientAssetTypes = {}; // mapa: clientId -> Set de tipos (strings)
 // ====================== INICIALIZAÇÃO DA BASE ======================
 function initBase() {
     const alertStyle = document.createElement('style');
-    alertStyle.textContent = `.cr-alert-badges{display:inline-flex;gap:3px;align-items:center;margin-left:6px}.cr-alert{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:.68rem;font-weight:700;line-height:1.5;white-space:nowrap}.cr-alert.reprov{background:rgba(192,57,43,.15);color:#E74C3C;border:1px solid rgba(192,57,43,.3)}.cr-alert.semcob{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}.cr-alert.fgcexc{background:rgba(142,68,173,.15);color:#9B59B6;border:1px solid rgba(142,68,173,.3)}`;
+    alertStyle.textContent = `.cr-alert-badges{display:inline-flex;gap:3px;align-items:center;margin-left:6px}.cr-alert{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:.68rem;font-weight:700;line-height:1.5;white-space:nowrap}.cr-alert.reprov{background:rgba(192,57,43,.15);color:#E74C3C;border:1px solid rgba(192,57,43,.3)}.cr-alert.semcob{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}.cr-alert.fgcexc{background:rgba(142,68,173,.15);color:#9B59B6;border:1px solid rgba(142,68,173,.3)}.cr-alert.conc{background:rgba(41,128,185,.15);color:#5DADE2;border:1px solid rgba(41,128,185,.3)}.cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3)}`;
     document.head.appendChild(alertStyle);
     try {
         if (BASE_EMISSORES_JSON && BASE_EMISSORES_JSON !== '%%BASE_EMISSORES%%') {
@@ -765,11 +817,12 @@ function loadPosicoes(file) {
         clientAssetTypes = {}; // reinicia
         posicoesData.forEach(r => {
             // Alerts
-            if (!clientAlerts[r.clientId]) clientAlerts[r.clientId] = { reprovadoCount: 0, semCoberturaCount: 0, fgcExcedido: false };
+            if (!clientAlerts[r.clientId]) clientAlerts[r.clientId] = { reprovadoCount: 0, semCoberturaCount: 0, aprovadoCount: 0, fgcExcedido: false };
             const em = findEmissor(r.issuer);
             const cond = em ? em.condicao : 'Sem Cobertura';
             if (cond === 'Reprovado') clientAlerts[r.clientId].reprovadoCount++;
             if (cond === 'Sem Cobertura') clientAlerts[r.clientId].semCoberturaCount++;
+            if (cond === 'Aprovado') clientAlerts[r.clientId].aprovadoCount++;
 
             // Asset types
             if (!clientAssetTypes[r.clientId]) clientAssetTypes[r.clientId] = new Set();
@@ -800,8 +853,26 @@ function loadPosicoes(file) {
             }
         });
 
+        // Calcular concentração: ativo único de RF > 5% do patrimônio
+        const clientRfAtivos = {}; // clientId -> [ { asset, issuer, netValue } ]
+        posicoesData.forEach(r => {
+            if (!clientRfAtivos[r.clientId]) clientRfAtivos[r.clientId] = [];
+            clientRfAtivos[r.clientId].push(r);
+        });
+        Object.keys(clientRfAtivos).forEach(cid => {
+            const patrimonio = clientTotalPatrimonio[cid] || 0;
+            if (patrimonio <= 0) return;
+            const ativos = clientRfAtivos[cid];
+            const ativosConc = ativos.filter(r => (r.netValue || 0) / patrimonio > 0.05);
+            if (ativosConc.length > 0) {
+                if (!clientAlerts[cid]) clientAlerts[cid] = { reprovadoCount: 0, semCoberturaCount: 0, fgcExcedido: false };
+                clientAlerts[cid].concentracaoAtivos = ativosConc.length;
+            }
+        });
+
         // Atualizar dropdown de tipos de ativos
         updateAssetTypeDropdown();
+        document.getElementById('issuerFilterSection').style.display = 'block';
 
         setStatus('stPos', 'ok', `✓ ${posicoesData.length} posições · ${currentClientsList.length} clientes`, true, 'pos');
         renderClientsList();
@@ -1086,6 +1157,7 @@ function renderClientsList() {
         if (currentAlertFilter === 'reprovado' && (clientAlerts[c.id] || {}).reprovadoCount === 0) return false;
         if (currentAlertFilter === 'semCobertura' && (clientAlerts[c.id] || {}).semCoberturaCount === 0) return false;
         if (currentFgcFilter && !(clientAlerts[c.id] || {}).fgcExcedido) return false;
+        if (currentConcentracaoFilter && !((clientAlerts[c.id] || {}).concentracaoAtivos > 0)) return false;
         if (selectedAssetTypes.length > 0) {
             const types = clientAssetTypes[c.id] || new Set();
             const hasType = selectedAssetTypes.some(t => types.has(t));
@@ -1109,8 +1181,8 @@ function renderClientsList() {
         const isActive = c.id === currentClient;
         const nIssuers = issuerCount[c.id] ? issuerCount[c.id].size : '—';
         const alerts = clientAlerts[c.id] || {};
-        const alertBadges = (alerts.reprovadoCount > 0 || alerts.semCoberturaCount > 0 || alerts.fgcExcedido)
-            ? `<span class="cr-alert-badges">${alerts.reprovadoCount > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${alerts.reprovadoCount} ${alerts.reprovadoCount === 1 ? 'Reprovado' : 'Reprovados'}</span>` : ''}${alerts.semCoberturaCount > 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${alerts.semCoberturaCount} ${alerts.semCoberturaCount === 1 ? 'Sem Cobertura' : 'Sem Cobertura'}</span>` : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc"><span class="cr-alert-dot"></span>FGC Excedido</span>' : ''}</span>`
+        const alertBadges = (alerts.aprovadoCount > 0 || alerts.reprovadoCount > 0 || alerts.semCoberturaCount > 0 || alerts.fgcExcedido || alerts.concentracaoAtivos > 0)
+            ? `<span class="cr-alert-badges">${alerts.aprovadoCount > 0 ? `<span class="cr-alert aprov"><span class="cr-alert-dot"></span>${alerts.aprovadoCount} ${alerts.aprovadoCount === 1 ? 'Aprovado' : 'Aprovados'}</span>` : ''}${alerts.reprovadoCount > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${alerts.reprovadoCount} ${alerts.reprovadoCount === 1 ? 'Reprovado' : 'Reprovados'}</span>` : ''}${alerts.semCoberturaCount > 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${alerts.semCoberturaCount} ${alerts.semCoberturaCount === 1 ? 'Sem Cobertura' : 'Sem Cobertura'}</span>` : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc"><span class="cr-alert-dot"></span>FGC Excedido</span>' : ''}${alerts.concentracaoAtivos > 0 ? `<span class="cr-alert conc"><span class="cr-alert-dot"></span>${alerts.concentracaoAtivos} Ativo${alerts.concentracaoAtivos > 1 ? 's' : ''} &gt;5%</span>` : ''}</span>`
             : '';
         return `<div class="client-row${isActive?' active':''}" data-id="${c.id}" onclick="selectClient('${c.id}')">
             <div class="cr-id"><span class="cr-id-dot"></span>${clientNames[c.id] ? `<span style="font-size:.62rem;font-weight:400;text-transform:uppercase;letter-spacing:.10em;color:var(--gold)">${esc(clientNames[c.id])}</span><span style="font-size:0.62rem;font-weight:400;margin-left:5px;font-family:'DM Mono',monospace;color:var(--gold);opacity:0.7;">${esc(c.id)}</span>` : esc(c.id)}${alertBadges}</div>
@@ -1144,6 +1216,12 @@ function setupClientUI() {
                 renderClientsList();
                 return;
             }
+            if (alert === 'concentracao') {
+                currentConcentracaoFilter = !currentConcentracaoFilter;
+                btn.classList.toggle('active-conc', currentConcentracaoFilter);
+                renderClientsList();
+                return;
+            }
             // Para reprovado/semCobertura
             if (currentAlertFilter === alert) {
                 currentAlertFilter = null;
@@ -1173,6 +1251,96 @@ function setupClientUI() {
         });
         // As checkboxes são geradas dinamicamente em updateAssetTypeDropdown
     }
+}
+
+// ====================== FILTRO POR EMISSOR ======================
+function setupIssuerFilter() {
+    const input = document.getElementById('issuerSearch');
+    if (!input) return;
+    input.addEventListener('input', function(e) {
+        const q = e.target.value.trim();
+        document.getElementById('issuerClearBtn').style.display = q ? 'inline-block' : 'none';
+        renderIssuerResults(q);
+    });
+}
+
+function clearIssuerFilter() {
+    const input = document.getElementById('issuerSearch');
+    if (input) input.value = '';
+    const btn = document.getElementById('issuerClearBtn');
+    if (btn) btn.style.display = 'none';
+    const res = document.getElementById('issuerResults');
+    if (res) res.classList.remove('visible');
+}
+
+function renderIssuerResults(query) {
+    const results = document.getElementById('issuerResults');
+    const grid    = document.getElementById('issuerClientsGrid');
+    const title   = document.getElementById('issuerResultsTitle');
+    if (!results || !grid || !title) return;
+
+    if (!query || query.length < 2) { results.classList.remove('visible'); return; }
+
+    const qNorm = normalize(query);
+
+    // Issuers que batem com a busca
+    const matchedIssuers = new Set();
+    posicoesData.forEach(function(r) {
+        if (r.issuer && normalize(r.issuer).includes(qNorm)) matchedIssuers.add(r.issuer);
+    });
+
+    results.classList.add('visible');
+
+    if (matchedIssuers.size === 0) {
+        title.innerHTML = 'Nenhum emissor encontrado para <span>' + esc(query) + '</span>';
+        grid.innerHTML  = '<div class="issuer-no-results">Tente outro termo de busca.</div>';
+        return;
+    }
+
+    // Agrupa por cliente
+    const clientMap = {}; // clientId -> { issuers: Set, assets: [], totalVal: 0 }
+    posicoesData.forEach(function(r) {
+        if (!matchedIssuers.has(r.issuer)) return;
+        if (!clientMap[r.clientId]) clientMap[r.clientId] = { issuers: new Set(), assets: [], totalVal: 0 };
+        clientMap[r.clientId].issuers.add(r.issuer);
+        clientMap[r.clientId].assets.push(r);
+        clientMap[r.clientId].totalVal += (r.netValue || 0);
+    });
+
+    const totalClients = Object.keys(clientMap).length;
+    const issuersPreview = Array.from(matchedIssuers).slice(0, 3).map(esc).join(', ')
+        + (matchedIssuers.size > 3 ? ' +' + (matchedIssuers.size - 3) + ' emissores' : '');
+
+    title.innerHTML = '<span>' + totalClients + '</span> cliente' + (totalClients !== 1 ? 's' : '')
+        + ' com exposição em: <span>' + issuersPreview + '</span>';
+
+    const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+    const sorted = Object.entries(clientMap).sort(function(a, b) {
+        const na = Number(a[0]), nb = Number(b[0]);
+        return (!isNaN(na) && !isNaN(nb)) ? na - nb : String(a[0]).localeCompare(String(b[0]));
+    });
+
+    grid.innerHTML = sorted.map(function(entry) {
+        const cid  = entry[0];
+        const data = entry[1];
+        const name = clientNames[cid] || '';
+        const issuersText = Array.from(data.issuers).slice(0, 2).map(esc).join(', ')
+            + (data.issuers.size > 2 ? ' +' + (data.issuers.size - 2) : '');
+        const assetsDesc = data.assets.length === 1
+            ? esc(data.assets[0].asset || data.assets[0].issuer || cid)
+            : data.assets.length + ' posições';
+        const valStr = data.totalVal > 0 ? ' · ' + fmt.format(data.totalVal) : '';
+        const nameHtml = name
+            ? '<span style="font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">'
+                + esc(name) + '</span> <span style="opacity:.55;font-size:.68rem;">' + esc(cid) + '</span>'
+            : esc(cid);
+        return '<div class="issuer-client-card" onclick="selectClient(\'' + esc(cid) + '\');clearIssuerFilter();">'
+            + '<div class="issuer-client-id">' + nameHtml + '</div>'
+            + '<div class="issuer-client-name">' + issuersText + '</div>'
+            + '<div class="issuer-client-assets">' + assetsDesc + valStr + '</div>'
+            + '</div>';
+    }).join('');
 }
 
 function updateAssetTypeDropdown() {
@@ -1297,6 +1465,7 @@ function renderResult(data, cid) {
     const fgcLimit = 250000;
     let totalExposicao = 0, totalCoberto = 0, totalExcedente = 0;
     const fgcRows = [];
+    const fgcExportRows = [];
     for (const [, entry] of fgcMap.entries()) {
         const total = entry.total; totalExposicao += total;
         let status, statusClass, cobertura, excedente = 0;
@@ -1304,7 +1473,9 @@ function renderResult(data, cid) {
         else { cobertura = fgcLimit; excedente = total - fgcLimit; totalCoberto += fgcLimit; totalExcedente += excedente; status = 'Parcialmente coberto (excede o limite)'; statusClass = 'coverage-partial'; }
         const displayName = entry.conglomeradoNome || entry.emissor;
         fgcRows.push(`<tr><td>${esc(displayName)}</td><td>${fmtBRL(total)}</td><td class="${statusClass}">${status}</td><td>${fmtBRL(cobertura)}</td><td>${excedente > 0 ? fmtBRL(excedente) : '—'}</td></tr>`);
+        fgcExportRows.push({ 'Conglomerado / Emissor': displayName, 'Valor Exposto': total, 'Status FGC': status, 'Valor Coberto': cobertura, 'Excedente': excedente });
     }
+    lastFgcRows = fgcExportRows;
     const pct = totalExposicao > 0 ? (totalCoberto / totalExposicao * 100).toFixed(1) : 0;
     const fgcHtml = `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">🏦 Exposição Total (Ativos com Cobertura FGC)</div><div class="fgc-value">${fmtBRL(totalExposicao)}</div></div><div class="fgc-card"><div class="fgc-label">🛡️ Cobertura FGC (até R$ 250k por conglomerado)</div><div class="fgc-value">${fmtBRL(totalCoberto)}</div><div class="fgc-status">${pct}% da exposição</div></div><div class="fgc-card"><div class="fgc-label">⚠️ Exposição sem Cobertura FGC</div><div class="fgc-value coverage-excess">${fmtBRL(totalExcedente)}</div></div></div>${fgcRows.length > 0 ? `<div class="fgc-cong-table"><table><thead><tr><th>Conglomerado / Emissor</th><th>Valor Exposto</th><th>Status FGC</th><th>Valor Coberto</th><th>Excedente</th></tr></thead><tbody>${fgcRows.join('')}</tbody></table></div>` : '<div class="empty" style="padding:40px"><div class="empty-text">Nenhum ativo bancário elegível para FGC encontrado</div></div>'}`;
 
@@ -1312,6 +1483,7 @@ function renderResult(data, cid) {
     function renderConcentracaoTab(tipoCredito) {
         const ativos = data.filter(r => r.tipoCredito === tipoCredito);
         if (!ativos.length) {
+            if (tipoCredito === 'Privado') lastCredPrivadoRows = []; else lastCredBancarioRows = [];
             return `<div class="empty" style="padding:40px"><div class="empty-text">Cliente não possui ativos de Crédito ${tipoCredito === 'Privado' ? 'Privado' : 'Bancário'}</div></div>`;
         }
         // Agrupa por emissor (nomeInterno quando disponível)
@@ -1323,22 +1495,27 @@ function renderResult(data, cid) {
             if (grupos.get(key).peso === null && r._pesoMaximo !== undefined && r._pesoMaximo !== null) grupos.get(key).peso = r._pesoMaximo;
         });
         const totalGrupo = ativos.reduce((s, r) => s + (r.netValue || 0), 0);
+        const exportRows = [];
         const linhas = Array.from(grupos.values()).sort((a, b) => b.valor - a.valor).map(g => {
             const pctPatrimonio = patrimonioTotal > 0 ? (g.valor / patrimonioTotal * 100) : null;
             const pesoMaximoPct = (g.peso !== null && g.peso !== undefined) ? g.peso * 100 : null;
-            let statusHtml;
+            let statusHtml, statusTexto;
             if (pctPatrimonio === null) {
                 statusHtml = `<span style="color:#55627A;font-size:.75rem">Patrimônio total não disponível</span>`;
+                statusTexto = 'Patrimônio total não disponível';
             } else if (pesoMaximoPct === null) {
                 statusHtml = `<span style="color:#55627A;font-size:.75rem">Peso máximo não cadastrado</span>`;
+                statusTexto = 'Peso máximo não cadastrado';
             } else {
                 const diff = pctPatrimonio - pesoMaximoPct;
-                if (Math.abs(diff) < 0.01) statusHtml = `<span class="conc-status conc-equal">No limite</span>`;
-                else if (diff > 0) statusHtml = `<span class="conc-status conc-above">Acima do limite (+${diff.toFixed(2)} p.p.)</span>`;
-                else statusHtml = `<span class="conc-status conc-below">Dentro do limite (${diff.toFixed(2)} p.p.)</span>`;
+                if (Math.abs(diff) < 0.01) { statusHtml = `<span class="conc-status conc-equal">No limite</span>`; statusTexto = 'No limite'; }
+                else if (diff > 0) { statusHtml = `<span class="conc-status conc-above">Acima do limite (+${diff.toFixed(2)} p.p.)</span>`; statusTexto = `Acima do limite (+${diff.toFixed(2)} p.p.)`; }
+                else { statusHtml = `<span class="conc-status conc-below">Dentro do limite (${diff.toFixed(2)} p.p.)</span>`; statusTexto = `Dentro do limite (${diff.toFixed(2)} p.p.)`; }
             }
+            exportRows.push({ 'Emissor': g.nome, 'Valor (R$)': g.valor, '% do Patrimônio': pctPatrimonio !== null ? Number(pctPatrimonio.toFixed(2)) : null, 'Peso Máximo Recomendado (%)': pesoMaximoPct !== null ? Number(pesoMaximoPct.toFixed(2)) : null, 'Status': statusTexto });
             return `<tr><td>${esc(g.nome)}</td><td>${fmtBRL(g.valor)}</td><td>${pctPatrimonio !== null ? pctPatrimonio.toFixed(2) + '%' : '—'}</td><td>${pesoMaximoPct !== null ? pesoMaximoPct.toFixed(2) + '%' : '—'}</td><td>${statusHtml}</td></tr>`;
         }).join('');
+        if (tipoCredito === 'Privado') lastCredPrivadoRows = exportRows; else lastCredBancarioRows = exportRows;
         const patrimonioInfo = patrimonioTotal > 0
             ? `<div class="fgc-card"><div class="fgc-label">💰 Patrimônio Total do Cliente</div><div class="fgc-value">${fmtBRL(patrimonioTotal)}</div></div>`
             : `<div class="fgc-card"><div class="fgc-label">⚠️ Patrimônio Total</div><div class="fgc-value" style="font-size:.85rem;color:#55627A">Não encontrado na aba posicao_total do Excel de posições</div></div>`;
@@ -1347,11 +1524,116 @@ function renderResult(data, cid) {
     const credPrivadoHtml = renderConcentracaoTab('Privado');
     const credBancarioHtml = renderConcentracaoTab('Bancário');
 
-    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div></div>`;
+    // ====== Concentração > 5%: todos os clientes, ativo a ativo, acima de 5% do patrimônio ======
+    function renderConcentracaoGlobalTab() {
+        if (!posicoesData.length) {
+            lastConcentracao5Data = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-text">Carregue o arquivo de posições para visualizar a concentração</div></div>`;
+        }
+        const LIMIAR = 5; // %
+        const linhas = [];
+        for (const pos of posicoesData) {
+            const patrimonioTotal = clientTotalPatrimonio[pos.clientId] || 0;
+            if (patrimonioTotal <= 0) continue;
+            const pct = (pos.netValue || 0) / patrimonioTotal * 100;
+            if (pct <= LIMIAR) continue;
+            const em = findEmissor(pos.issuer);
+            const tipo = em ? em.tipo : inferTipo(pos.marketType);
+            const nomeInterno = em ? (em.baseInterna || em.baseXP) : pos.issuer;
+            const condicao = em ? em.condicao : 'Sem Cobertura';
+            linhas.push({ ...pos, tipoCredito: tipo, nomeInterno, condicao, pct, patrimonioTotal });
+        }
+        if (!linhas.length) {
+            lastConcentracao5Data = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-icon">📈</div><div class="empty-text">Nenhum ativo acima de 5% do patrimônio encontrado entre os clientes carregados</div></div>`;
+        }
+        linhas.sort((a, b) => b.pct - a.pct);
+        lastConcentracao5Data = linhas;
+        const nClientesAfetados = new Set(linhas.map(l => l.clientId)).size;
+        const rowsHtml = linhas.map(r => {
+            const condClass = r.condicao === 'Aprovado' ? 'aprovado' : (r.condicao === 'Reprovado' ? 'reprovado' : 'semcob');
+            const tipoClass = r.tipoCredito === 'Bancário' ? 'bancario' : (r.tipoCredito === 'Privado' ? 'privado' : 'tesouro');
+            const nomeCliente = clientNames[r.clientId] || '';
+            const clienteCell = nomeCliente
+                ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
+                : esc(r.clientId);
+            const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td><strong>${r.pct.toFixed(2)}%</strong></td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+        }).join('');
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📈 Ativos Acima de 5% do Patrimônio</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+    }
+
+    const concentracao5Html = renderConcentracaoGlobalTab();
+    lastRendaFixaData = data;
+    lastRendaFixaClient = cid;
+
+    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div></div>`;
+}
+
+function exportarExcelAtual() {
+    if (typeof XLSX === 'undefined') {
+        alert('Biblioteca de exportação ainda não carregou. Aguarde alguns segundos e tente novamente.');
+        return;
+    }
+    if (!lastRendaFixaClient) {
+        alert('Selecione um cliente antes de exportar.');
+        return;
+    }
+    const wb = XLSX.utils.book_new();
+    const nomeCliente = clientNames[lastRendaFixaClient] || '';
+    const patrimonioTotal = clientTotalPatrimonio[lastRendaFixaClient] || 0;
+
+    // ---- Aba: Análise de Renda Fixa ----
+    const rendaFixaRows = (lastRendaFixaData || []).map(r => ({
+        'Emissor': r.issuer,
+        'Nome Interno': r.nomeInterno || '',
+        'Asset': r.asset,
+        'Tipo de Mercado': r.marketType,
+        'Tipo de Crédito': r.tipoCredito,
+        'Valor Líquido (R$)': r.netValue || 0,
+        'Data de Compra': fmtDate(r.purchDate),
+        'Vencimento': fmtDate(r.dueDate),
+        'Rating': r.rating || '—',
+        'Condição': r.condicao,
+    }));
+    const wsRenda = XLSX.utils.json_to_sheet(rendaFixaRows.length ? rendaFixaRows : [{ 'Aviso': 'Nenhuma posição encontrada' }]);
+    XLSX.utils.book_append_sheet(wb, wsRenda, 'Análise de Renda Fixa');
+
+    // ---- Aba: Análise de Cobertura FGC ----
+    const wsFgc = XLSX.utils.json_to_sheet(lastFgcRows.length ? lastFgcRows : [{ 'Aviso': 'Nenhum ativo bancário elegível para FGC encontrado' }]);
+    XLSX.utils.book_append_sheet(wb, wsFgc, 'Análise de Cobertura FGC');
+
+    // ---- Aba: Análise de Crédito Privado ----
+    const wsPriv = XLSX.utils.json_to_sheet(lastCredPrivadoRows.length ? lastCredPrivadoRows : [{ 'Aviso': 'Cliente não possui ativos de Crédito Privado' }]);
+    XLSX.utils.book_append_sheet(wb, wsPriv, 'Análise de Crédito Privado');
+
+    // ---- Aba: Análise de Crédito Bancário ----
+    const wsBanc = XLSX.utils.json_to_sheet(lastCredBancarioRows.length ? lastCredBancarioRows : [{ 'Aviso': 'Cliente não possui ativos de Crédito Bancário' }]);
+    XLSX.utils.book_append_sheet(wb, wsBanc, 'Análise de Crédito Bancário');
+
+    // ---- Aba: Concentração > 5% (visão global, todos os clientes) ----
+    const conc5Rows = (lastConcentracao5Data || []).map(r => ({
+        'Cliente': r.clientId,
+        'Nome do Cliente': clientNames[r.clientId] || '',
+        'Ativo / Emissor': r.issuer,
+        'Nome Interno': r.nomeInterno || '',
+        'Tipo': r.tipoCredito,
+        'Valor (R$)': r.netValue || 0,
+        '% do Patrimônio': Number(r.pct.toFixed(2)),
+        'Patrimônio Total (R$)': r.patrimonioTotal || 0,
+        'Condição': r.condicao,
+    }));
+    const wsConc5 = XLSX.utils.json_to_sheet(conc5Rows.length ? conc5Rows : [{ 'Aviso': 'Nenhum ativo acima de 5% do patrimônio encontrado' }]);
+    XLSX.utils.book_append_sheet(wb, wsConc5, 'Concentração > 5%');
+
+    const dataStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    const sufixoCliente = nomeCliente ? `${lastRendaFixaClient}_${nomeCliente}` : lastRendaFixaClient;
+    const fileName = `Analise_Renda_Fixa_${sufixoCliente.replace(/[^a-zA-Z0-9_-]/g, '_')}_${dataStr}.xlsx`;
+    XLSX.writeFile(wb, fileName);
 }
 
 function switchTab(tab) {
-    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario'];
+    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario', 'conc5'];
     const btns = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
     btns.forEach(btn => btn.classList.remove('active'));
@@ -1447,8 +1729,11 @@ function loadCadastro(file) {
 function clearFile(target) {
     if (target === 'pos') {
         posicoesData = []; currentClientsList = []; clientAlerts = {}; clientAssetTypes = {}; clientTotalPatrimonio = {};
+        currentFgcFilter = false; currentConcentracaoFilter = false;
         document.getElementById('filePos').value = '';
         document.getElementById('clientsSection').style.display = 'none';
+        document.getElementById('issuerFilterSection').style.display = 'none';
+        clearIssuerFilter();
         document.getElementById('clientsGrid').innerHTML = '';
         if (document.getElementById('clientsFooter')) document.getElementById('clientsFooter').textContent = '';
         setStatus('stPos', 'idle', 'Aguardando arquivo…', false);
@@ -1464,6 +1749,7 @@ function clearFile(target) {
 // ====================== INIT ======================
 initBase();
 setupClientUI();
+setupIssuerFilter();
 
 // Bind dos botões de upload de posições e cadastro
 (function(){
