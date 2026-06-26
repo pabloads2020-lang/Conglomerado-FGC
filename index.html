@@ -298,6 +298,8 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .issuer-search-box input::placeholder{color:var(--tx3);}
 .issuer-clear-btn{background:transparent;border:none;color:var(--tx3);cursor:pointer;font-size:.72rem;padding:3px 8px;border-radius:6px;transition:all .15s;font-family:inherit;white-space:nowrap;}
 .issuer-clear-btn:hover{color:#E74C3C;background:rgba(192,57,43,.1);}
+.issuer-export-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(197,160,89,.10);border:1px solid rgba(197,160,89,.35);color:#C5A059;cursor:pointer;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:6px;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.issuer-export-btn:hover{background:rgba(197,160,89,.18);border-color:rgba(197,160,89,.55);}
 .issuer-results{display:none;padding:.8rem 1.2rem;}
 .issuer-results.visible{display:block;}
 .issuer-results-title{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--tx3);margin-bottom:.6rem;}
@@ -469,6 +471,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
                     <input type="text" id="issuerSearch" placeholder="Digite o nome do emissor (ex: BTG, XP, Bradesco…)" autocomplete="off">
                 </div>
                 <button class="issuer-clear-btn" id="issuerClearBtn" style="display:none;" onclick="clearIssuerFilter()">✕ Limpar</button>
+                <button class="issuer-export-btn" id="issuerExportBtn" style="display:none;" onclick="exportarExcelEmissor()" title="Exportar resultados para Excel"><span class="material-symbols-outlined" style="font-size:15px;">download</span> Exportar Excel</button>
             </div>
             <div class="issuer-results" id="issuerResults">
                 <div class="issuer-results-title" id="issuerResultsTitle"></div>
@@ -577,6 +580,8 @@ let lastCredPrivadoRows = []; // cache: linhas da aba Crédito Privado do client
 let lastCredBancarioRows = []; // cache: linhas da aba Crédito Bancário do cliente atual
 let lastRendaFixaData = []; // cache: posições processadas do cliente atual (aba Renda Fixa)
 let lastRendaFixaClient = null; // cache: id do cliente atualmente exibido
+let lastIssuerSearchData = []; // cache: ativo a ativo dos resultados da busca por emissor (para export)
+let lastIssuerSearchQuery = ''; // cache: termo buscado na busca por emissor
 let baseEmissores = [];
 let baseConglomerado = [];
 let currentClient = null;
@@ -1269,19 +1274,31 @@ function clearIssuerFilter() {
     if (input) input.value = '';
     const btn = document.getElementById('issuerClearBtn');
     if (btn) btn.style.display = 'none';
+    const exportBtn = document.getElementById('issuerExportBtn');
+    if (exportBtn) exportBtn.style.display = 'none';
     const res = document.getElementById('issuerResults');
     if (res) res.classList.remove('visible');
+    lastIssuerSearchData = [];
+    lastIssuerSearchQuery = '';
 }
 
 function renderIssuerResults(query) {
     const results = document.getElementById('issuerResults');
     const grid    = document.getElementById('issuerClientsGrid');
     const title   = document.getElementById('issuerResultsTitle');
+    const exportBtn = document.getElementById('issuerExportBtn');
     if (!results || !grid || !title) return;
 
-    if (!query || query.length < 2) { results.classList.remove('visible'); return; }
+    if (!query || query.length < 2) {
+        results.classList.remove('visible');
+        if (exportBtn) exportBtn.style.display = 'none';
+        lastIssuerSearchQuery = '';
+        lastIssuerSearchData = [];
+        return;
+    }
 
     const qNorm = normalize(query);
+    lastIssuerSearchQuery = query;
 
     // Issuers que batem com a busca
     const matchedIssuers = new Set();
@@ -1294,6 +1311,8 @@ function renderIssuerResults(query) {
     if (matchedIssuers.size === 0) {
         title.innerHTML = 'Nenhum emissor encontrado para <span>' + esc(query) + '</span>';
         grid.innerHTML  = '<div class="issuer-no-results">Tente outro termo de busca.</div>';
+        if (exportBtn) exportBtn.style.display = 'none';
+        lastIssuerSearchData = [];
         return;
     }
 
@@ -1306,6 +1325,24 @@ function renderIssuerResults(query) {
         clientMap[r.clientId].assets.push(r);
         clientMap[r.clientId].totalVal += (r.netValue || 0);
     });
+
+    // Monta dados estruturados (ativo a ativo) para export Excel, com % patrimônio e condição
+    const exportRows = [];
+    Object.entries(clientMap).forEach(function(entry) {
+        const cid = entry[0];
+        const data = entry[1];
+        const patrimonioTotal = clientTotalPatrimonio[cid] || 0;
+        data.assets.forEach(function(r) {
+            const em = findEmissor(r.issuer);
+            const tipo = em ? em.tipo : inferTipo(r.marketType);
+            const nomeInterno = em ? (em.baseInterna || em.baseXP) : r.issuer;
+            const condicao = em ? em.condicao : 'Sem Cobertura';
+            const pct = patrimonioTotal > 0 ? (r.netValue || 0) / patrimonioTotal * 100 : null;
+            exportRows.push({ clientId: cid, ...r, tipoCredito: tipo, nomeInterno, condicao, pct, patrimonioTotal });
+        });
+    });
+    lastIssuerSearchData = exportRows;
+    if (exportBtn) exportBtn.style.display = exportRows.length ? 'inline-flex' : 'none';
 
     const totalClients = Object.keys(clientMap).length;
     const issuersPreview = Array.from(matchedIssuers).slice(0, 3).map(esc).join(', ')
@@ -1341,6 +1378,43 @@ function renderIssuerResults(query) {
             + '<div class="issuer-client-assets">' + assetsDesc + valStr + '</div>'
             + '</div>';
     }).join('');
+}
+
+function exportarExcelEmissor() {
+    if (typeof XLSX === 'undefined') {
+        alert('Biblioteca de exportação ainda não carregou. Aguarde alguns segundos e tente novamente.');
+        return;
+    }
+    if (!lastIssuerSearchData || !lastIssuerSearchData.length) {
+        alert('Nenhum resultado para exportar. Faça uma busca por emissor primeiro.');
+        return;
+    }
+    const rows = lastIssuerSearchData.map(function(r) {
+        return {
+            'Nome do Cliente': clientNames[r.clientId] || '',
+            'Código do Cliente': r.clientId,
+            'Ativo Alocado': r.asset || '',
+            'Emissor': r.issuer || '',
+            'Nome Interno do Emissor': r.nomeInterno || '',
+            'Tipo': r.tipoCredito || '',
+            'Valor Alocado (R$)': r.netValue || 0,
+            '% do Patrimônio': r.pct !== null && r.pct !== undefined ? Number(r.pct.toFixed(2)) : null,
+            'Patrimônio Total (R$)': r.patrimonioTotal || 0,
+            'Vencimento': fmtDate(r.dueDate),
+            'Rating': r.rating || '—',
+            'Condição': r.condicao || '',
+        };
+    });
+    rows.sort(function(a, b) {
+        if (a['Nome do Cliente'] !== b['Nome do Cliente']) return (a['Nome do Cliente'] || '').localeCompare(b['Nome do Cliente'] || '');
+        return String(a['Código do Cliente']).localeCompare(String(b['Código do Cliente']));
+    });
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Busca por Emissor');
+    const dataStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    const termo = (lastIssuerSearchQuery || 'emissor').replace(/[^a-zA-Z0-9_-]/g, '_');
+    XLSX.writeFile(wb, `Busca_Emissor_${termo}_${dataStr}.xlsx`);
 }
 
 function updateAssetTypeDropdown() {
