@@ -575,6 +575,7 @@ const SENHA_HASH = '00d18d446243e49bf38a35ccdec9d541134b9596306a23b3db4f603b4c78
 let posicoesData = [];
 let clientTotalPatrimonio = {}; // mapa: clientId -> TotalValue (aba posicao_total)
 let lastConcentracao5Data = []; // cache: linhas calculadas para export Excel da aba Concentração > 5%
+let lastReprovadosSemCobData = []; // cache: linhas calculadas para export Excel da aba Reprovados/Sem Cobertura
 let lastFgcRows = []; // cache: linhas da aba FGC do cliente atual (para export)
 let lastCredPrivadoRows = []; // cache: linhas da aba Crédito Privado do cliente atual
 let lastCredBancarioRows = []; // cache: linhas da aba Crédito Bancário do cliente atual
@@ -1638,10 +1639,51 @@ function renderResult(data, cid) {
     }
 
     const concentracao5Html = renderConcentracaoGlobalTab();
+
+    // ====== Reprovados / Sem Cobertura: todos os clientes, ativo a ativo, sem filtro de % ======
+    function renderReprovadosSemCoberturaTab() {
+        if (!posicoesData.length) {
+            lastReprovadosSemCobData = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-text">Carregue o arquivo de posições para visualizar os ativos reprovados/sem cobertura</div></div>`;
+        }
+        const linhas = [];
+        for (const pos of posicoesData) {
+            const em = findEmissor(pos.issuer);
+            const tipo = em ? em.tipo : inferTipo(pos.marketType);
+            const nomeInterno = em ? (em.baseInterna || em.baseXP) : pos.issuer;
+            const condicao = em ? em.condicao : 'Sem Cobertura';
+            if (condicao !== 'Reprovado' && condicao !== 'Sem Cobertura') continue;
+            const patrimonioTotal = clientTotalPatrimonio[pos.clientId] || 0;
+            const pct = patrimonioTotal > 0 ? (pos.netValue || 0) / patrimonioTotal * 100 : null;
+            linhas.push({ ...pos, tipoCredito: tipo, nomeInterno, condicao, pct, patrimonioTotal });
+        }
+        if (!linhas.length) {
+            lastReprovadosSemCobData = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-icon">🚫</div><div class="empty-text">Nenhum ativo reprovado ou sem cobertura encontrado entre os clientes carregados</div></div>`;
+        }
+        linhas.sort((a, b) => (a.condicao === b.condicao ? (b.netValue||0) - (a.netValue||0) : (a.condicao === 'Reprovado' ? -1 : 1)));
+        lastReprovadosSemCobData = linhas;
+        const nClientesAfetados = new Set(linhas.map(l => l.clientId)).size;
+        const nReprovados = linhas.filter(l => l.condicao === 'Reprovado').length;
+        const nSemCobertura = linhas.filter(l => l.condicao === 'Sem Cobertura').length;
+        const rowsHtml = linhas.map(r => {
+            const condClass = r.condicao === 'Reprovado' ? 'reprovado' : 'semcob';
+            const tipoClass = r.tipoCredito === 'Bancário' ? 'bancario' : (r.tipoCredito === 'Privado' ? 'privado' : 'tesouro');
+            const nomeCliente = clientNames[r.clientId] || '';
+            const clienteCell = nomeCliente
+                ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
+                : esc(r.clientId);
+            const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td>${r.pct !== null ? '<strong>'+r.pct.toFixed(4)+'%</strong>' : '—'}</td><td>${r.patrimonioTotal > 0 ? fmtBRL(r.patrimonioTotal) : '—'}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+        }).join('');
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">🚫 Total de Ativos</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label">⛔ Reprovados</div><div class="fgc-value">${nReprovados}</div></div><div class="fgc-card"><div class="fgc-label">❔ Sem Cobertura</div><div class="fgc-value">${nSemCobertura}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+    }
+
+    const reprovadosSemCobHtml = renderReprovadosSemCoberturaTab();
     lastRendaFixaData = data;
     lastRendaFixaClient = cid;
 
-    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div></div>`;
+    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-btn" onclick="switchTab('reprovsemcob')">🚫 Reprovados / Sem Cobertura</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div><div id="tab-reprovsemcob" class="tab-content">${reprovadosSemCobHtml}</div></div>`;
 }
 
 function exportarExcelAtual() {
@@ -1700,6 +1742,21 @@ function exportarExcelAtual() {
     const wsConc5 = XLSX.utils.json_to_sheet(conc5Rows.length ? conc5Rows : [{ 'Aviso': 'Nenhum ativo acima de 5% do patrimônio encontrado' }]);
     XLSX.utils.book_append_sheet(wb, wsConc5, 'Concentração > 5%');
 
+    // ---- Aba: Reprovados / Sem Cobertura (visão global, todos os clientes, sem filtro de %) ----
+    const reprovSemCobRows = (lastReprovadosSemCobData || []).map(r => ({
+        'Cliente': r.clientId,
+        'Nome do Cliente': clientNames[r.clientId] || '',
+        'Ativo / Emissor': r.issuer,
+        'Nome Interno': r.nomeInterno || '',
+        'Tipo': r.tipoCredito,
+        'Valor (R$)': r.netValue || 0,
+        '% do Patrimônio': r.pct !== null ? Number(r.pct.toFixed(4)) : null,
+        'Patrimônio Total (R$)': r.patrimonioTotal || 0,
+        'Condição': r.condicao,
+    }));
+    const wsReprovSemCob = XLSX.utils.json_to_sheet(reprovSemCobRows.length ? reprovSemCobRows : [{ 'Aviso': 'Nenhum ativo reprovado ou sem cobertura encontrado' }]);
+    XLSX.utils.book_append_sheet(wb, wsReprovSemCob, 'Reprovados-SemCobertura');
+
     const dataStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
     const sufixoCliente = nomeCliente ? `${lastRendaFixaClient}_${nomeCliente}` : lastRendaFixaClient;
     const fileName = `Analise_Renda_Fixa_${sufixoCliente.replace(/[^a-zA-Z0-9_-]/g, '_')}_${dataStr}.xlsx`;
@@ -1707,7 +1764,7 @@ function exportarExcelAtual() {
 }
 
 function switchTab(tab) {
-    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario', 'conc5'];
+    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario', 'conc5', 'reprovsemcob'];
     const btns = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
     btns.forEach(btn => btn.classList.remove('active'));
