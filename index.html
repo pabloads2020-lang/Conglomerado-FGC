@@ -534,7 +534,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
         <div class="modal-sub">Esta área é restrita. Insira a senha para continuar.</div>
         <div class="modal-err" id="modalSenhaErr">Senha incorreta. Tente novamente.</div>
         <div class="modal-input-wrap">
-            <input type="password" class="modal-input" id="modalSenhaInput" placeholder="Senha" autocomplete="off">
+            <input type="text" class="modal-input" id="modalSenhaInput" placeholder="Senha" autocomplete="off" data-lpignore="true" data-1p-ignore="true" spellcheck="false">
             <button type="button" class="modal-eye" id="btnToggleSenha" tabindex="-1" aria-label="Mostrar senha">
                 <span class="material-symbols-outlined" style="font-size:18px;" id="eyeIcon">visibility</span>
             </button>
@@ -1057,13 +1057,53 @@ function gerarHTMLComBase() {
 }
 
 // ====================== MODAL SENHA ======================
+// Máscara feita em JS puro (não usa type="password" nem CSS proprietário),
+// assim funciona igual em Firefox, Chrome, Edge e Safari, e evita de vez
+// qualquer heurística de "gerenciador de senhas" do navegador.
+const MASK_CHAR = '•';
+let senhaModalReal = ''; // valor real digitado, nunca fica exposto no atributo value do input
+
+function senhaModalRenderizar(mostrar) {
+    const inp = document.getElementById('modalSenhaInput');
+    const selStart = inp.selectionStart;
+    inp.value = mostrar ? senhaModalReal : MASK_CHAR.repeat(senhaModalReal.length);
+    inp.setSelectionRange(selStart, selStart);
+}
+
+document.getElementById('modalSenhaInput').addEventListener('input', function (e) {
+    const val = this.value;
+    const selStart = this.selectionStart;
+    const prevLen = senhaModalReal.length;
+    const newLen = val.length;
+    const mostrandoTexto = document.getElementById('eyeIcon').textContent === 'visibility_off';
+
+    if (mostrandoTexto) {
+        // com a senha visível, o próprio value já é o texto real
+        senhaModalReal = val;
+    } else if (newLen > prevLen) {
+        // caracteres inseridos
+        const insertedCount = newLen - prevLen;
+        const insertPos = selStart - insertedCount;
+        const inserted = val.slice(insertPos, insertPos + insertedCount);
+        senhaModalReal = senhaModalReal.slice(0, insertPos) + inserted + senhaModalReal.slice(insertPos);
+    } else if (newLen < prevLen) {
+        // caracteres removidos
+        const deletedCount = prevLen - newLen;
+        const deletePos = selStart;
+        senhaModalReal = senhaModalReal.slice(0, deletePos) + senhaModalReal.slice(deletePos + deletedCount);
+    }
+    senhaModalRenderizar(mostrandoTexto);
+});
+
 document.getElementById('btnAtualizarBase').addEventListener('click', () => {
     if (!SENHA_HASH || SENHA_HASH === '%%SENHA_HASH%%') {
         abrirModalUploadBase();
         return;
     }
     document.getElementById('modalSenha').classList.remove('hidden');
+    senhaModalReal = '';
     document.getElementById('modalSenhaInput').value = '';
+    document.getElementById('eyeIcon').textContent = 'visibility';
     document.getElementById('modalSenhaErr').style.display = 'none';
     setTimeout(() => document.getElementById('modalSenhaInput').focus(), 100);
 });
@@ -1073,13 +1113,14 @@ document.getElementById('modalSenhaCancelar').addEventListener('click', () => {
 });
 
 document.getElementById('modalSenhaConfirmar').addEventListener('click', async () => {
-    const senha = document.getElementById('modalSenhaInput').value;
+    const senha = senhaModalReal;
     const hash = await sha256(senha);
     if (hash === SENHA_HASH) {
         document.getElementById('modalSenha').classList.add('hidden');
         abrirModalUploadBase();
     } else {
         document.getElementById('modalSenhaErr').style.display = 'block';
+        senhaModalReal = '';
         document.getElementById('modalSenhaInput').value = '';
         document.getElementById('modalSenhaInput').focus();
     }
@@ -1089,11 +1130,11 @@ document.getElementById('modalSenhaInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('modalSenhaConfirmar').click();
 });
 document.getElementById('btnToggleSenha').addEventListener('click', () => {
-    const inp = document.getElementById('modalSenhaInput');
     const icon = document.getElementById('eyeIcon');
-    if (inp.type === 'password') { inp.type = 'text'; icon.textContent = 'visibility_off'; }
-    else { inp.type = 'password'; icon.textContent = 'visibility'; }
-    inp.focus();
+    const oculto = icon.textContent !== 'visibility_off';
+    icon.textContent = oculto ? 'visibility_off' : 'visibility';
+    senhaModalRenderizar(oculto);
+    document.getElementById('modalSenhaInput').focus();
 });
 
 // ====================== MODAL UPLOAD BASE ======================
