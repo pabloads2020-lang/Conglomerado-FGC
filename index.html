@@ -228,6 +228,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .alert-filter-btn.active-semcob{background:rgba(212,130,10,.12);border-color:rgba(212,130,10,.4);color:#E67E22;}
 .alert-filter-btn.active-fgc{background:rgba(142,68,173,.12);border-color:rgba(142,68,173,.4);color:#BB8FCE;}
 .alert-filter-btn.active-conc{background:rgba(41,128,185,.12);border-color:rgba(41,128,185,.4);color:#5DADE2;}
+.alert-filter-btn.active-conc3{background:rgba(22,160,133,.12);border-color:rgba(22,160,133,.4);color:#1ABC9C;}
 .cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3);}
 .cr-alert-badges{display:inline-flex;gap:5px;flex-wrap:wrap;margin-left:4px;align-items:center;}
 .cr-alert{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.69rem;font-weight:600;white-space:nowrap;font-family:'DM Sans',sans-serif;}
@@ -496,6 +497,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
                 <button class="alert-filter-btn" id="filterSemCob" data-alert="semCobertura">⚠ Sem Cobertura</button>
                 <button class="alert-filter-btn" id="filterFGC" data-alert="fgc">⚠ FGC Excedido</button>
                 <button class="alert-filter-btn" id="filterConcentracao" data-alert="concentracao">📊 Conc. &gt;5%</button>
+                <button class="alert-filter-btn" id="filterConcentracao3" data-alert="concentracao3">📊 Conc. &gt;3%</button>
             </div>
             <div class="asset-type-filter">
                 <button class="sort-btn" id="assetTypeToggle">📊 Tipos de Ativos ▼</button>
@@ -575,6 +577,7 @@ const SENHA_HASH = 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6
 let posicoesData = [];
 let clientTotalPatrimonio = {}; // mapa: clientId -> TotalValue (aba posicao_total)
 let lastConcentracao5Data = []; // cache: linhas calculadas para export Excel da aba Concentração > 5%
+let lastConcentracao3Data = []; // cache: linhas calculadas para export Excel da aba Concentração > 3%
 let lastReprovadosSemCobData = []; // cache: linhas calculadas para export Excel da aba Reprovados/Sem Cobertura
 let lastFgcRows = []; // cache: linhas da aba FGC do cliente atual (para export)
 let lastCredPrivadoRows = []; // cache: linhas da aba Crédito Privado do cliente atual
@@ -593,6 +596,7 @@ let currentFilter = '';
 let currentAlertFilter = null;
 let currentFgcFilter = false; // novo estado para filtro FGC
 let currentConcentracaoFilter = false; // filtro: ativo > 5% do patrimônio
+let currentConcentracao3Filter = false; // filtro: ativo > 3% do patrimônio
 let selectedAssetTypes = []; // novo estado para tipos de ativos selecionados
 let pendingBaseEmissores = [];
 let pendingBaseConglomerado = [];
@@ -603,7 +607,7 @@ let clientAssetTypes = {}; // mapa: clientId -> Set de tipos (strings)
 // ====================== INICIALIZAÇÃO DA BASE ======================
 function initBase() {
     const alertStyle = document.createElement('style');
-    alertStyle.textContent = `.cr-alert-badges{display:inline-flex;gap:3px;align-items:center;margin-left:6px}.cr-alert{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:.68rem;font-weight:700;line-height:1.5;white-space:nowrap}.cr-alert.reprov{background:rgba(192,57,43,.15);color:#E74C3C;border:1px solid rgba(192,57,43,.3)}.cr-alert.semcob{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}.cr-alert.fgcexc{background:rgba(142,68,173,.15);color:#9B59B6;border:1px solid rgba(142,68,173,.3)}.cr-alert.conc{background:rgba(41,128,185,.15);color:#5DADE2;border:1px solid rgba(41,128,185,.3)}.cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3)}`;
+    alertStyle.textContent = `.cr-alert-badges{display:inline-flex;gap:3px;align-items:center;margin-left:6px}.cr-alert{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:.68rem;font-weight:700;line-height:1.5;white-space:nowrap}.cr-alert.reprov{background:rgba(192,57,43,.15);color:#E74C3C;border:1px solid rgba(192,57,43,.3)}.cr-alert.semcob{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}.cr-alert.fgcexc{background:rgba(142,68,173,.15);color:#9B59B6;border:1px solid rgba(142,68,173,.3)}.cr-alert.conc{background:rgba(41,128,185,.15);color:#5DADE2;border:1px solid rgba(41,128,185,.3)}.cr-alert.conc3{background:rgba(22,160,133,.15);color:#1ABC9C;border:1px solid rgba(22,160,133,.3)}.cr-alert.aprov{background:rgba(39,174,96,.15);color:#2ECC71;border:1px solid rgba(39,174,96,.3)}`;
     document.head.appendChild(alertStyle);
     try {
         if (BASE_EMISSORES_JSON && BASE_EMISSORES_JSON !== '%%BASE_EMISSORES%%') {
@@ -873,6 +877,12 @@ function loadPosicoes(file) {
             if (ativosConc.length > 0) {
                 if (!clientAlerts[cid]) clientAlerts[cid] = { reprovadoCount: 0, semCoberturaCount: 0, fgcExcedido: false };
                 clientAlerts[cid].concentracaoAtivos = ativosConc.length;
+            }
+            // Calcular concentração: ativo único de RF > 3% do patrimônio
+            const ativosConc3 = ativos.filter(r => (r.netValue || 0) / patrimonio > 0.03);
+            if (ativosConc3.length > 0) {
+                if (!clientAlerts[cid]) clientAlerts[cid] = { reprovadoCount: 0, semCoberturaCount: 0, fgcExcedido: false };
+                clientAlerts[cid].concentracaoAtivos3 = ativosConc3.length;
             }
         });
 
@@ -1205,6 +1215,7 @@ function renderClientsList() {
         if (currentAlertFilter === 'semCobertura' && (clientAlerts[c.id] || {}).semCoberturaCount === 0) return false;
         if (currentFgcFilter && !(clientAlerts[c.id] || {}).fgcExcedido) return false;
         if (currentConcentracaoFilter && !((clientAlerts[c.id] || {}).concentracaoAtivos > 0)) return false;
+        if (currentConcentracao3Filter && !((clientAlerts[c.id] || {}).concentracaoAtivos3 > 0)) return false;
         if (selectedAssetTypes.length > 0) {
             const types = clientAssetTypes[c.id] || new Set();
             const hasType = selectedAssetTypes.some(t => types.has(t));
@@ -1228,8 +1239,8 @@ function renderClientsList() {
         const isActive = c.id === currentClient;
         const nIssuers = issuerCount[c.id] ? issuerCount[c.id].size : '—';
         const alerts = clientAlerts[c.id] || {};
-        const alertBadges = (alerts.aprovadoCount > 0 || alerts.reprovadoCount > 0 || alerts.semCoberturaCount > 0 || alerts.fgcExcedido || alerts.concentracaoAtivos > 0)
-            ? `<span class="cr-alert-badges">${alerts.aprovadoCount > 0 ? `<span class="cr-alert aprov"><span class="cr-alert-dot"></span>${alerts.aprovadoCount} ${alerts.aprovadoCount === 1 ? 'Aprovado' : 'Aprovados'}</span>` : ''}${alerts.reprovadoCount > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${alerts.reprovadoCount} ${alerts.reprovadoCount === 1 ? 'Reprovado' : 'Reprovados'}</span>` : ''}${alerts.semCoberturaCount > 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${alerts.semCoberturaCount} ${alerts.semCoberturaCount === 1 ? 'Sem Cobertura' : 'Sem Cobertura'}</span>` : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc"><span class="cr-alert-dot"></span>FGC Excedido</span>' : ''}${alerts.concentracaoAtivos > 0 ? `<span class="cr-alert conc"><span class="cr-alert-dot"></span>${alerts.concentracaoAtivos} Ativo${alerts.concentracaoAtivos > 1 ? 's' : ''} &gt;5%</span>` : ''}</span>`
+        const alertBadges = (alerts.aprovadoCount > 0 || alerts.reprovadoCount > 0 || alerts.semCoberturaCount > 0 || alerts.fgcExcedido || alerts.concentracaoAtivos > 0 || alerts.concentracaoAtivos3 > 0)
+            ? `<span class="cr-alert-badges">${alerts.aprovadoCount > 0 ? `<span class="cr-alert aprov"><span class="cr-alert-dot"></span>${alerts.aprovadoCount} ${alerts.aprovadoCount === 1 ? 'Aprovado' : 'Aprovados'}</span>` : ''}${alerts.reprovadoCount > 0 ? `<span class="cr-alert reprov"><span class="cr-alert-dot"></span>${alerts.reprovadoCount} ${alerts.reprovadoCount === 1 ? 'Reprovado' : 'Reprovados'}</span>` : ''}${alerts.semCoberturaCount > 0 ? `<span class="cr-alert semcob"><span class="cr-alert-dot"></span>${alerts.semCoberturaCount} ${alerts.semCoberturaCount === 1 ? 'Sem Cobertura' : 'Sem Cobertura'}</span>` : ''}${alerts.fgcExcedido ? '<span class="cr-alert fgcexc"><span class="cr-alert-dot"></span>FGC Excedido</span>' : ''}${alerts.concentracaoAtivos > 0 ? `<span class="cr-alert conc"><span class="cr-alert-dot"></span>${alerts.concentracaoAtivos} Ativo${alerts.concentracaoAtivos > 1 ? 's' : ''} &gt;5%</span>` : ''}${alerts.concentracaoAtivos3 > 0 ? `<span class="cr-alert conc3"><span class="cr-alert-dot"></span>${alerts.concentracaoAtivos3} Ativo${alerts.concentracaoAtivos3 > 1 ? 's' : ''} &gt;3%</span>` : ''}</span>`
             : '';
         return `<div class="client-row${isActive?' active':''}" data-id="${c.id}" onclick="selectClient('${c.id}')">
             <div class="cr-id"><span class="cr-id-dot"></span>${clientNames[c.id] ? `<span style="font-size:.62rem;font-weight:400;text-transform:uppercase;letter-spacing:.10em;color:var(--gold)">${esc(clientNames[c.id])}</span><span style="font-size:0.62rem;font-weight:400;margin-left:5px;font-family:'DM Mono',monospace;color:var(--gold);opacity:0.7;">${esc(c.id)}</span>` : esc(c.id)}${alertBadges}</div>
@@ -1266,6 +1277,12 @@ function setupClientUI() {
             if (alert === 'concentracao') {
                 currentConcentracaoFilter = !currentConcentracaoFilter;
                 btn.classList.toggle('active-conc', currentConcentracaoFilter);
+                renderClientsList();
+                return;
+            }
+            if (alert === 'concentracao3') {
+                currentConcentracao3Filter = !currentConcentracao3Filter;
+                btn.classList.toggle('active-conc3', currentConcentracao3Filter);
                 renderClientsList();
                 return;
             }
@@ -1679,7 +1696,47 @@ function renderResult(data, cid) {
         return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📈 Ativos Acima de 5% do Patrimônio</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     }
 
+    // ====== Concentração > 3%: todos os clientes, ativo a ativo, acima de 3% do patrimônio ======
+    function renderConcentracaoGlobalTab3() {
+        if (!posicoesData.length) {
+            lastConcentracao3Data = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-text">Carregue o arquivo de posições para visualizar a concentração</div></div>`;
+        }
+        const LIMIAR3 = 3; // %
+        const linhas3 = [];
+        for (const pos of posicoesData) {
+            const patrimonioTotal = clientTotalPatrimonio[pos.clientId] || 0;
+            if (patrimonioTotal <= 0) continue;
+            const pct = (pos.netValue || 0) / patrimonioTotal * 100;
+            if (pct <= LIMIAR3) continue;
+            const em = findEmissor(pos.issuer);
+            const tipo = em ? em.tipo : inferTipo(pos.marketType);
+            const nomeInterno = em ? (em.baseInterna || em.baseXP) : pos.issuer;
+            const condicao = em ? em.condicao : 'Sem Cobertura';
+            linhas3.push({ ...pos, tipoCredito: tipo, nomeInterno, condicao, pct, patrimonioTotal });
+        }
+        if (!linhas3.length) {
+            lastConcentracao3Data = [];
+            return `<div class="empty" style="padding:40px"><div class="empty-icon">📈</div><div class="empty-text">Nenhum ativo acima de 3% do patrimônio encontrado entre os clientes carregados</div></div>`;
+        }
+        linhas3.sort((a, b) => b.pct - a.pct);
+        lastConcentracao3Data = linhas3;
+        const nClientesAfetados3 = new Set(linhas3.map(l => l.clientId)).size;
+        const rowsHtml3 = linhas3.map(r => {
+            const condClass = r.condicao === 'Aprovado' ? 'aprovado' : (r.condicao === 'Reprovado' ? 'reprovado' : 'semcob');
+            const tipoClass = r.tipoCredito === 'Bancário' ? 'bancario' : (r.tipoCredito === 'Privado' ? 'privado' : 'tesouro');
+            const nomeCliente = clientNames[r.clientId] || '';
+            const clienteCell = nomeCliente
+                ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
+                : esc(r.clientId);
+            const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td><strong>${r.pct.toFixed(2)}%</strong></td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+        }).join('');
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📈 Ativos Acima de 3% do Patrimônio</div><div class="fgc-value">${linhas3.length}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados3}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml3}</tbody></table></div>`;
+    }
+
     const concentracao5Html = renderConcentracaoGlobalTab();
+    const concentracao3Html = renderConcentracaoGlobalTab3();
 
     // ====== Reprovados / Sem Cobertura: todos os clientes, ativo a ativo, sem filtro de % ======
     function renderReprovadosSemCoberturaTab() {
@@ -1724,7 +1781,7 @@ function renderResult(data, cid) {
     lastRendaFixaData = data;
     lastRendaFixaClient = cid;
 
-    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-btn" onclick="switchTab('reprovsemcob')">🚫 Reprovados / Sem Cobertura</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div><div id="tab-reprovsemcob" class="tab-content">${reprovadosSemCobHtml}</div></div>`;
+    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-btn" onclick="switchTab('conc3')">📈 Concentração &gt; 3%</button><button class="tab-btn" onclick="switchTab('reprovsemcob')">🚫 Reprovados / Sem Cobertura</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div><div id="tab-conc3" class="tab-content">${concentracao3Html}</div><div id="tab-reprovsemcob" class="tab-content">${reprovadosSemCobHtml}</div></div>`;
 }
 
 function exportarExcelAtual() {
@@ -1783,6 +1840,21 @@ function exportarExcelAtual() {
     const wsConc5 = XLSX.utils.json_to_sheet(conc5Rows.length ? conc5Rows : [{ 'Aviso': 'Nenhum ativo acima de 5% do patrimônio encontrado' }]);
     XLSX.utils.book_append_sheet(wb, wsConc5, 'Concentração > 5%');
 
+    // ---- Aba: Concentração > 3% (visão global, todos os clientes) ----
+    const conc3Rows = (lastConcentracao3Data || []).map(r => ({
+        'Cliente': r.clientId,
+        'Nome do Cliente': clientNames[r.clientId] || '',
+        'Ativo / Emissor': r.issuer,
+        'Nome Interno': r.nomeInterno || '',
+        'Tipo': r.tipoCredito,
+        'Valor (R$)': r.netValue || 0,
+        '% do Patrimônio': Number(r.pct.toFixed(2)),
+        'Patrimônio Total (R$)': r.patrimonioTotal || 0,
+        'Condição': r.condicao,
+    }));
+    const wsConc3 = XLSX.utils.json_to_sheet(conc3Rows.length ? conc3Rows : [{ 'Aviso': 'Nenhum ativo acima de 3% do patrimônio encontrado' }]);
+    XLSX.utils.book_append_sheet(wb, wsConc3, 'Concentração > 3%');
+
     // ---- Aba: Reprovados / Sem Cobertura (visão global, todos os clientes, sem filtro de %) ----
     const reprovSemCobRows = (lastReprovadosSemCobData || []).map(r => ({
         'Cliente': r.clientId,
@@ -1805,7 +1877,7 @@ function exportarExcelAtual() {
 }
 
 function switchTab(tab) {
-    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario', 'conc5', 'reprovsemcob'];
+    const tabIds = ['rendafixa', 'fgc', 'credprivado', 'credbancario', 'conc5', 'conc3', 'reprovsemcob'];
     const btns = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
     btns.forEach(btn => btn.classList.remove('active'));
@@ -1901,7 +1973,7 @@ function loadCadastro(file) {
 function clearFile(target) {
     if (target === 'pos') {
         posicoesData = []; currentClientsList = []; clientAlerts = {}; clientAssetTypes = {}; clientTotalPatrimonio = {};
-        currentFgcFilter = false; currentConcentracaoFilter = false;
+        currentFgcFilter = false; currentConcentracaoFilter = false; currentConcentracao3Filter = false;
         document.getElementById('filePos').value = '';
         document.getElementById('clientsSection').style.display = 'none';
         document.getElementById('issuerFilterSection').style.display = 'none';
