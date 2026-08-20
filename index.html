@@ -32,8 +32,11 @@
     --gold-topbar: #f5c842;
     --amber-topbar: #e0ac2c;
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg-topbar);
-    border-bottom: 1px solid var(--border-topbar);
+    background: rgba(20,23,32,.3);
+    backdrop-filter: blur(8px) saturate(200%);
+    -webkit-backdrop-filter: blur(8px) saturate(200%);
+    border-bottom: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 4px 16px -8px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,.05);
     height: 52px;
     display: flex;
     align-items: center;
@@ -52,6 +55,11 @@ body.light .hub-topbar {
     --text3-topbar: #8a90a8;
     --gold-topbar: #b8860b;
     --amber-topbar: #c47d00;
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--border-topbar);
+    box-shadow: 0 4px 16px -8px rgba(0,0,0,0.1);
 }
 .hub-topbar-left, .hub-topbar-right {
     display: flex;
@@ -165,7 +173,7 @@ body.light .hub-topbar {
 }
 /* ==================== FIM TOPBAR ==================== */
 
-:root{--bg:#0B0E1A;--bg-card:#0F1322;--bg-card2:#151929;--bg-card3:#1C2235;--bd:#252B40;--bd2:#2E3555;--tx:#E5E9F0;--tx2:#8E9AAF;--tx3:#55627A;--gold:#C5A059;--gold2:#DDB96A;}
+:root{--bg:#07080B;--bg-card:#0D0F14;--bg-card2:#0F131C;--bg-card3:#12151C;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.18);--tx:#F5F6F8;--tx2:#9CA1AC;--tx3:#767C8A;--gold:#C5A059;--gold2:#DDB96A;}
 body.light{--bg:#F0F2F8;--bg-card:#FFFFFF;--bg-card2:#F5F7FC;--bg-card3:#EAECF5;--bd:#D4D8E8;--bd2:#C0C6D8;--tx:#1A1E2B;--tx2:#4A5068;--tx3:#8890A8;--gold:#9A7530;--gold2:#B8920A;}
 body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-height:100vh;transition:background .2s,color .2s;}
 .page{max-width:1380px;margin:0 auto;padding:1.75rem 1.5rem;}
@@ -323,7 +331,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .fgc-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;padding:1rem 1.4rem 0;}
 .fgc-card{background:var(--bg-card2);border-radius:12px;padding:1rem;flex:1;min-width:180px;border:1px solid var(--bd);}
 .fgc-label{font-size:.7rem;color:var(--tx2);margin-bottom:6px;}
-.fgc-value{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace;}
+.fgc-value{font-size:1.1rem;font-weight:400;font-family:'DM Mono',monospace;}
 .fgc-status{font-size:.7rem;margin-top:8px;padding-top:6px;border-top:1px solid var(--bd);}
 .fgc-cong-table{background:var(--bg-card2);border-radius:12px;margin:0 1.4rem 1.4rem;overflow:auto;}
 .fgc-cong-table table{width:100%;border-collapse:collapse;}
@@ -333,7 +341,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .coverage-covered{color:#2ECC71;}
 .coverage-partial{color:#E67E22;}
 .coverage-excess{color:#E74C3C;}
-.conc-status{font-weight:600;}
+.conc-status{font-weight:400;}
 .conc-equal{color:#E67E22;}
 .conc-above{color:#E74C3C;}
 .conc-below{color:#2ECC71;}
@@ -341,10 +349,11 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 /* ── Modal de senha ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 .modal-overlay.hidden{display:none;}
-.modal-box{background:var(--bg-card);border:1px solid var(--bd2);border-radius:16px;padding:1.5rem;width:100%;max-width:360px;}
-.modal-title{font-size:.95rem;font-weight:700;margin-bottom:.4rem;}
+.modal-box{background:rgba(20,23,32,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.5rem;width:100%;max-width:360px;box-shadow:0 30px 70px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);}
+.modal-title{font-size:.95rem;font-weight:700;margin-bottom:.4rem;display:flex;align-items:center;gap:7px;}
+.modal-title svg{width:15px;height:15px;color:#C5A059;flex-shrink:0;}
 .modal-sub{font-size:.72rem;color:var(--tx3);margin-bottom:1.2rem;}
-.modal-input{width:100%;background:var(--bg-card3);border:1px solid var(--bd);border-radius:8px;padding:9px 40px 9px 12px;color:var(--tx);font-size:.85rem;font-family:inherit;outline:none;transition:border-color .15s;margin-bottom:.75rem;}
+.modal-input{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 40px 9px 12px;color:var(--tx);font-size:.85rem;font-family:inherit;outline:none;transition:border-color .15s;margin-bottom:.75rem;}
 .modal-input:focus{border-color:rgba(197,160,89,.5);}
 .modal-input-wrap{position:relative;margin-bottom:.75rem;}
 .modal-input-wrap .modal-input{margin-bottom:0;}
@@ -352,10 +361,10 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 .modal-eye:hover{color:var(--gold);}
 .modal-actions{display:flex;gap:8px;}
 .modal-btn{flex:1;padding:9px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
-.modal-btn.cancel{background:var(--bg-card3);border:1px solid var(--bd);color:var(--tx2);}
+.modal-btn.cancel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--tx2);}
 .modal-btn.cancel:hover{border-color:#E74C3C;color:#E74C3C;}
-.modal-btn.confirm{background:#C5A059;border:none;color:#000;}
-.modal-btn.confirm:hover{background:#DDB96A;}
+.modal-btn.confirm{background:rgba(197,160,89,.12);border:1px solid rgba(197,160,89,.45);color:#C5A059;}
+.modal-btn.confirm:hover{background:rgba(197,160,89,.2);border-color:rgba(197,160,89,.7);}
 .modal-err{font-size:.72rem;color:#E74C3C;margin-bottom:.75rem;display:none;}
 
 /* ── Modal de atualizar base ── */
@@ -466,7 +475,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
         <div class="sec">Busca por Emissor</div>
         <div class="issuer-filter-wrap">
             <div class="issuer-filter-header">
-                <span class="issuer-filter-label">🔍 Emissor</span>
+                <span class="issuer-filter-label"><span class="material-symbols-outlined" style="font-size:14px;">search</span> Emissor</span>
                 <div class="issuer-search-box">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input type="search" id="issuerSearch" placeholder="Digite o nome do emissor (ex: BTG, XP, Bradesco…)" autocomplete="off" name="filtro-emissor-busca" data-lpignore="true" data-1p-ignore="true">
@@ -493,14 +502,14 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
                 <button class="sort-btn" data-sort="count">Por posições</button>
             </div>
             <div class="alert-filter-btns">
-                <button class="alert-filter-btn" id="filterReprov" data-alert="reprovado">⚠ Reprovado</button>
-                <button class="alert-filter-btn" id="filterSemCob" data-alert="semCobertura">⚠ Sem Cobertura</button>
-                <button class="alert-filter-btn" id="filterFGC" data-alert="fgc">⚠ FGC Excedido</button>
-                <button class="alert-filter-btn" id="filterConcentracao" data-alert="concentracao">📊 Conc. &gt;5%</button>
-                <button class="alert-filter-btn" id="filterConcentracao3" data-alert="concentracao3">📊 Conc. &gt;3%</button>
+                <button class="alert-filter-btn" id="filterReprov" data-alert="reprovado"><span class="material-symbols-outlined" style="font-size:14px;">warning</span> Reprovado</button>
+                <button class="alert-filter-btn" id="filterSemCob" data-alert="semCobertura"><span class="material-symbols-outlined" style="font-size:14px;">warning</span> Sem Cobertura</button>
+                <button class="alert-filter-btn" id="filterFGC" data-alert="fgc"><span class="material-symbols-outlined" style="font-size:14px;">warning</span> FGC Excedido</button>
+                <button class="alert-filter-btn" id="filterConcentracao" data-alert="concentracao"><span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Conc. &gt;5%</button>
+                <button class="alert-filter-btn" id="filterConcentracao3" data-alert="concentracao3"><span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Conc. &gt;3%</button>
             </div>
             <div class="asset-type-filter">
-                <button class="sort-btn" id="assetTypeToggle">📊 Tipos de Ativos ▼</button>
+                <button class="sort-btn" id="assetTypeToggle"><span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Tipos de Ativos ▼</button>
                 <div class="asset-type-dropdown" id="assetTypeDropdown"></div>
             </div>
             <span class="clients-stats" id="clientsStats"></span>
@@ -520,7 +529,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
     <div id="resultSection" style="margin-top:1.75rem;">
         <div class="result-panel">
             <div class="empty">
-                <div class="empty-icon">🔍</div>
+                <div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">search</span></div>
                 <div class="empty-text">Carregue o arquivo de posições e selecione um cliente</div>
             </div>
         </div>
@@ -532,7 +541,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 <!-- Modal: senha para atualizar base -->
 <div class="modal-overlay hidden" id="modalSenha">
     <div class="modal-box">
-        <div class="modal-title">🔒 Atualizar Base de Referência</div>
+        <div class="modal-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Atualizar Base de Referência</div>
         <div class="modal-sub">Esta área é restrita. Insira a senha para continuar.</div>
         <div class="modal-err" id="modalSenhaErr">Senha incorreta. Tente novamente.</div>
         <div class="modal-input-wrap">
@@ -551,7 +560,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
 <!-- Modal: upload da nova base -->
 <div class="modal-overlay hidden" id="modalUploadBase">
     <div class="modal-box">
-        <div class="modal-title">📋 Nova Base de Referência</div>
+        <div class="modal-title"><span class="material-symbols-outlined" style="font-size:14px;">assignment</span> Nova Base de Referência</div>
         <div class="modal-sub">Selecione o Excel com as abas: <strong>Nome do Emissor Bancário</strong>, <strong>Nome do Emissor Crédito Privado</strong>, <strong>Base Conglomerado</strong>.</div>
         <div class="modal-dropzone" id="dzBaseModal">
             <input type="file" id="fileBaseModal" accept=".xlsx,.xls">
@@ -561,7 +570,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);min-h
         <div class="st-bar" id="stBaseModal" style="margin-bottom:.75rem;"><span class="st idle">Aguardando arquivo…</span></div>
         <div class="modal-actions">
             <button class="modal-btn cancel" id="modalBaseFechar">Fechar</button>
-            <button class="modal-btn confirm" id="modalBaseSalvar" disabled>💾 Salvar e gerar HTML</button>
+            <button class="modal-btn confirm" id="modalBaseSalvar" disabled><span class="material-symbols-outlined" style="font-size:14px;">save</span> Salvar e gerar HTML</button>
         </div>
     </div>
 </div>
@@ -621,10 +630,10 @@ function initBase() {
     const el = document.getElementById('stBaseEmbutida');
     if (baseEmissores.length || baseConglomerado.length) {
         el.className = 'st ok';
-        el.textContent = `✓ ${baseEmissores.length} emissores · ${baseConglomerado.length} grupos`;
+        el.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">check</span> ${baseEmissores.length} emissores · ${baseConglomerado.length} grupos`;
     } else {
         el.className = 'st warn';
-        el.textContent = '⚠ Base não carregada — clique em "Atualizar base"';
+        el.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">warning</span> Base não carregada — clique em "Atualizar base"';
     }
 }
 
@@ -633,7 +642,7 @@ function setStatus(id, type, msg, showClear, clearTarget) {
     if (id === 'stPos') {
         const label = document.getElementById('stPosLabel');
         const btn = document.getElementById('dzPos');
-        if (label) { label.className = 'st ' + type; label.textContent = msg; }
+        if (label) { label.className = 'st ' + type; label.innerHTML = msg; }
         if (showClear && btn) {
             btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">close</span> Limpar';
             btn.onclick = () => clearFile(clearTarget);
@@ -770,10 +779,10 @@ function readExcel(file, callback) {
 
 function loadPosicoes(file) {
     readExcel(file, (wb, err) => {
-        if (err) { setStatus('stPos', 'err', '❌ ' + err, false); return; }
+        if (err) { setStatus('stPos', 'err', '<span class="material-symbols-outlined" style="font-size:14px;">cancel</span> ' + err, false); return; }
         const sheetName = wb.SheetNames.find(s => s.toLowerCase().includes('renda')) || wb.SheetNames[0];
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
-        if (!rows.length) { setStatus('stPos', 'err', '❌ Nenhum dado encontrado', false); return; }
+        if (!rows.length) { setStatus('stPos', 'err', '<span class="material-symbols-outlined" style="font-size:14px;">cancel</span> Nenhum dado encontrado', false); return; }
 
         // Lê a aba posicao_total para obter o patrimônio total de cada cliente
         clientTotalPatrimonio = {};
@@ -818,7 +827,7 @@ function loadPosicoes(file) {
             };
         }).filter(r => r.clientId && r.issuer);
 
-        if (!posicoesData.length) { setStatus('stPos', 'err', '❌ Nenhuma posição válida', false); return; }
+        if (!posicoesData.length) { setStatus('stPos', 'err', '<span class="material-symbols-outlined" style="font-size:14px;">cancel</span> Nenhuma posição válida', false); return; }
         const clientsMap = new Map();
         posicoesData.forEach(r => { clientsMap.set(r.clientId, (clientsMap.get(r.clientId) || 0) + 1); });
         currentClientsList = Array.from(clientsMap.entries()).map(([id, count]) => ({ id, count }));
@@ -890,7 +899,7 @@ function loadPosicoes(file) {
         updateAssetTypeDropdown();
         document.getElementById('issuerFilterSection').style.display = 'block';
 
-        setStatus('stPos', 'ok', `✓ ${posicoesData.length} posições · ${currentClientsList.length} clientes`, true, 'pos');
+        setStatus('stPos', 'ok', `<span class="material-symbols-outlined" style="font-size:14px;">check</span> ${posicoesData.length} posições · ${currentClientsList.length} clientes`, true, 'pos');
         renderClientsList();
     });
 }
@@ -898,7 +907,7 @@ function loadPosicoes(file) {
 // ====================== LEITURA DA BASE (modal) ======================
 function parseBaseExcel(file) {
     readExcel(file, (wb, err) => {
-        if (err) { setStatus('stBaseModal', 'err', '❌ ' + err, false); return; }
+        if (err) { setStatus('stBaseModal', 'err', '<span class="material-symbols-outlined" style="font-size:14px;">cancel</span> ' + err, false); return; }
         pendingBaseEmissores = [];
         pendingBaseConglomerado = [];
 
@@ -1016,11 +1025,11 @@ function parseBaseExcel(file) {
         }
 
         if (!pendingBaseEmissores.length && !pendingBaseConglomerado.length) {
-            setStatus('stBaseModal', 'err', '❌ Nenhum emissor ou conglomerado encontrado', false);
+            setStatus('stBaseModal', 'err', '<span class="material-symbols-outlined" style="font-size:14px;">cancel</span> Nenhum emissor ou conglomerado encontrado', false);
             document.getElementById('modalBaseSalvar').disabled = true;
             return;
         }
-        setStatus('stBaseModal', 'ok', `✓ ${pendingBaseEmissores.length} emissores · ${pendingBaseConglomerado.length} grupos`, false);
+        setStatus('stBaseModal', 'ok', `<span class="material-symbols-outlined" style="font-size:14px;">check</span> ${pendingBaseEmissores.length} emissores · ${pendingBaseConglomerado.length} grupos`, false);
         document.getElementById('dzBaseModal').classList.add('ok');
         document.getElementById('modalBaseSalvar').disabled = false;
     });
@@ -1509,7 +1518,7 @@ function toggleAssetType(type, checked) {
     const toggleBtn = document.getElementById('assetTypeToggle');
     if (toggleBtn) {
         const count = selectedAssetTypes.length;
-        toggleBtn.textContent = count > 0 ? `📊 Tipos (${count}) ▼` : '📊 Tipos de Ativos ▼';
+        toggleBtn.innerHTML = count > 0 ? `<span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Tipos (${count}) ▼` : '<span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Tipos de Ativos ▼';
     }
     // Se já houver um cliente selecionado, re-renderiza os detalhes com o novo filtro
     if (currentClient) selectClient(currentClient);
@@ -1530,6 +1539,8 @@ function isFGCEligible(marketType) {
 
 function selectClient(cid) {
     document.querySelectorAll('.client-row').forEach(row => { row.classList.toggle('active', row.getAttribute('data-id') === cid); });
+    const resultSectionEl = document.getElementById('resultSection');
+    if (resultSectionEl) resultSectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     let rows = posicoesData.filter(r => r.clientId === cid);
     if (!rows.length) return;
     if (selectedAssetTypes.length > 0) {
@@ -1543,7 +1554,7 @@ function selectClient(cid) {
     if (!rows.length) {
         currentClient = cid;
         currentProcessedData = [];
-        document.getElementById('resultSection').innerHTML = '<div class="result-panel"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Este cliente não possui ativos dos tipos selecionados no filtro</div></div></div>';
+        document.getElementById('resultSection').innerHTML = '<div class="result-panel"><div class="empty"><div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">search</span></div><div class="empty-text">Este cliente não possui ativos dos tipos selecionados no filtro</div></div></div>';
         return;
     }
     const processed = rows.map(pos => {
@@ -1563,6 +1574,8 @@ function selectClient(cid) {
 }
 
 function renderResult(data, cid) {
+    const nomeCliente = clientNames[cid] || '';
+    const clienteLabel = nomeCliente ? `${esc(nomeCliente)} · ${esc(cid)}` : esc(cid);
     const totalVal = data.reduce((s, r) => s + (r.netValue || 0), 0);
     const patrimonioTotal = clientTotalPatrimonio[cid] || 0;
     const grupoAprov = data.filter(r => r.condicao === 'Aprovado');
@@ -1610,7 +1623,7 @@ function renderResult(data, cid) {
     }
     lastFgcRows = fgcExportRows;
     const pct = totalExposicao > 0 ? (totalCoberto / totalExposicao * 100).toFixed(1) : 0;
-    const fgcHtml = `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">🏦 Exposição Total (Ativos com Cobertura FGC)</div><div class="fgc-value">${fmtBRL(totalExposicao)}</div></div><div class="fgc-card"><div class="fgc-label">🛡️ Cobertura FGC (até R$ 250k por conglomerado)</div><div class="fgc-value">${fmtBRL(totalCoberto)}</div><div class="fgc-status">${pct}% da exposição</div></div><div class="fgc-card"><div class="fgc-label">⚠️ Exposição sem Cobertura FGC</div><div class="fgc-value coverage-excess">${fmtBRL(totalExcedente)}</div></div></div>${fgcRows.length > 0 ? `<div class="fgc-cong-table"><table><thead><tr><th>Conglomerado / Emissor</th><th>Valor Exposto</th><th>Status FGC</th><th>Valor Coberto</th><th>Excedente</th></tr></thead><tbody>${fgcRows.join('')}</tbody></table></div>` : '<div class="empty" style="padding:40px"><div class="empty-text">Nenhum ativo bancário elegível para FGC encontrado</div></div>'}`;
+    const fgcHtml = `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">account_balance</span> Exposição Total (Ativos com Cobertura FGC)</div><div class="fgc-value">${fmtBRL(totalExposicao)}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">shield</span> Cobertura FGC (até R$ 250k por conglomerado)</div><div class="fgc-value">${fmtBRL(totalCoberto)}</div><div class="fgc-status">${pct}% da exposição</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">warning</span> Exposição sem Cobertura FGC</div><div class="fgc-value coverage-excess">${fmtBRL(totalExcedente)}</div></div></div>${fgcRows.length > 0 ? `<div class="fgc-cong-table"><table><thead><tr><th>Conglomerado / Emissor</th><th>Valor Exposto</th><th>Status FGC</th><th>Valor Coberto</th><th>Excedente</th></tr></thead><tbody>${fgcRows.join('')}</tbody></table></div>` : '<div class="empty" style="padding:40px"><div class="empty-text">Nenhum ativo bancário elegível para FGC encontrado</div></div>'}`;
 
     // ====== Análise de Crédito Privado / Bancário (concentração por emissor vs peso máximo) ======
     function renderConcentracaoTab(tipoCredito) {
@@ -1650,9 +1663,9 @@ function renderResult(data, cid) {
         }).join('');
         if (tipoCredito === 'Privado') lastCredPrivadoRows = exportRows; else lastCredBancarioRows = exportRows;
         const patrimonioInfo = patrimonioTotal > 0
-            ? `<div class="fgc-card"><div class="fgc-label">💰 Patrimônio Total do Cliente</div><div class="fgc-value">${fmtBRL(patrimonioTotal)}</div></div>`
-            : `<div class="fgc-card"><div class="fgc-label">⚠️ Patrimônio Total</div><div class="fgc-value" style="font-size:.85rem;color:#55627A">Não encontrado na aba posicao_total do Excel de posições</div></div>`;
-        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📊 Total em Crédito ${tipoCredito === 'Privado' ? 'Privado' : 'Bancário'}</div><div class="fgc-value">${fmtBRL(totalGrupo)}</div></div>${patrimonioInfo}</div><div class="fgc-cong-table"><table><thead><tr><th>Emissor</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Peso Máximo Recomendado</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table></div>`;
+            ? `<div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">payments</span> Patrimônio Total do Cliente</div><div class="fgc-value">${fmtBRL(patrimonioTotal)}</div></div>`
+            : `<div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">warning</span> Patrimônio Total</div><div class="fgc-value" style="font-size:.85rem;color:#55627A">Não encontrado na aba posicao_total do Excel de posições</div></div>`;
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Total em Crédito ${tipoCredito === 'Privado' ? 'Privado' : 'Bancário'}</div><div class="fgc-value">${fmtBRL(totalGrupo)}</div></div>${patrimonioInfo}</div><div class="fgc-cong-table"><table><thead><tr><th>Emissor</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Peso Máximo Recomendado</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table></div>`;
     }
     const credPrivadoHtml = renderConcentracaoTab('Privado');
     const credBancarioHtml = renderConcentracaoTab('Bancário');
@@ -1678,7 +1691,7 @@ function renderResult(data, cid) {
         }
         if (!linhas.length) {
             lastConcentracao5Data = [];
-            return `<div class="empty" style="padding:40px"><div class="empty-icon">📈</div><div class="empty-text">Nenhum ativo acima de 5% do patrimônio encontrado entre os clientes carregados</div></div>`;
+            return `<div class="empty" style="padding:40px"><div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span></div><div class="empty-text">Nenhum ativo acima de 5% do patrimônio encontrado entre os clientes carregados</div></div>`;
         }
         linhas.sort((a, b) => b.pct - a.pct);
         lastConcentracao5Data = linhas;
@@ -1691,9 +1704,9 @@ function renderResult(data, cid) {
                 ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
                 : esc(r.clientId);
             const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
-            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td><strong>${r.pct.toFixed(2)}%</strong></td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td>${r.pct.toFixed(2)}%</td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
         }).join('');
-        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📈 Ativos Acima de 5% do Patrimônio</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span> Ativos Acima de 5% do Patrimônio</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">group</span> Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     }
 
     // ====== Concentração > 3%: todos os clientes, ativo a ativo, acima de 3% do patrimônio ======
@@ -1717,7 +1730,7 @@ function renderResult(data, cid) {
         }
         if (!linhas3.length) {
             lastConcentracao3Data = [];
-            return `<div class="empty" style="padding:40px"><div class="empty-icon">📈</div><div class="empty-text">Nenhum ativo acima de 3% do patrimônio encontrado entre os clientes carregados</div></div>`;
+            return `<div class="empty" style="padding:40px"><div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span></div><div class="empty-text">Nenhum ativo acima de 3% do patrimônio encontrado entre os clientes carregados</div></div>`;
         }
         linhas3.sort((a, b) => b.pct - a.pct);
         lastConcentracao3Data = linhas3;
@@ -1730,9 +1743,9 @@ function renderResult(data, cid) {
                 ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
                 : esc(r.clientId);
             const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
-            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td><strong>${r.pct.toFixed(2)}%</strong></td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td>${r.pct.toFixed(2)}%</td><td>${fmtBRL(r.patrimonioTotal)}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
         }).join('');
-        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">📈 Ativos Acima de 3% do Patrimônio</div><div class="fgc-value">${linhas3.length}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados3}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml3}</tbody></table></div>`;
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span> Ativos Acima de 3% do Patrimônio</div><div class="fgc-value">${linhas3.length}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">group</span> Clientes Afetados</div><div class="fgc-value">${nClientesAfetados3}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml3}</tbody></table></div>`;
     }
 
     const concentracao5Html = renderConcentracaoGlobalTab();
@@ -1757,7 +1770,7 @@ function renderResult(data, cid) {
         }
         if (!linhas.length) {
             lastReprovadosSemCobData = [];
-            return `<div class="empty" style="padding:40px"><div class="empty-icon">🚫</div><div class="empty-text">Nenhum ativo reprovado ou sem cobertura encontrado entre os clientes carregados</div></div>`;
+            return `<div class="empty" style="padding:40px"><div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">block</span></div><div class="empty-text">Nenhum ativo reprovado ou sem cobertura encontrado entre os clientes carregados</div></div>`;
         }
         linhas.sort((a, b) => (a.condicao === b.condicao ? (b.netValue||0) - (a.netValue||0) : (a.condicao === 'Reprovado' ? -1 : 1)));
         lastReprovadosSemCobData = linhas;
@@ -1772,16 +1785,16 @@ function renderResult(data, cid) {
                 ? `<span style="color:var(--gold)">${esc(nomeCliente)}</span><br><span style="font-size:.66rem;opacity:.65">${esc(r.clientId)}</span>`
                 : esc(r.clientId);
             const showInterno = r.nomeInterno && r.nomeInterno.toUpperCase() !== r.issuer.toUpperCase();
-            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td>${r.pct !== null ? '<strong>'+r.pct.toFixed(4)+'%</strong>' : '—'}</td><td>${r.patrimonioTotal > 0 ? fmtBRL(r.patrimonioTotal) : '—'}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
+            return `<tr><td>${clienteCell}</td><td>${esc(r.issuer)}${showInterno ? `<div style="font-size:.66rem;opacity:.65">↳ ${esc(r.nomeInterno)}</div>` : ''}</td><td><span class="badge-tipo ${tipoClass}">${r.tipoCredito}</span></td><td>${fmtBRL(r.netValue)}</td><td>${r.pct !== null ? r.pct.toFixed(2)+'%' : '—'}</td><td>${r.patrimonioTotal > 0 ? fmtBRL(r.patrimonioTotal) : '—'}</td><td><span class="badge ${condClass}"><span class="bd"></span>${r.condicao}</span></td></tr>`;
         }).join('');
-        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label">🚫 Total de Ativos</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label">⛔ Reprovados</div><div class="fgc-value">${nReprovados}</div></div><div class="fgc-card"><div class="fgc-label">❔ Sem Cobertura</div><div class="fgc-value">${nSemCobertura}</div></div><div class="fgc-card"><div class="fgc-label">👥 Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+        return `<div class="fgc-summary"><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">block</span> Total de Ativos</div><div class="fgc-value">${linhas.length}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">block</span> Reprovados</div><div class="fgc-value">${nReprovados}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">help</span> Sem Cobertura</div><div class="fgc-value">${nSemCobertura}</div></div><div class="fgc-card"><div class="fgc-label"><span class="material-symbols-outlined" style="font-size:14px;">group</span> Clientes Afetados</div><div class="fgc-value">${nClientesAfetados}</div></div></div><div class="fgc-cong-table"><table><thead><tr><th>Cliente</th><th>Ativo / Emissor</th><th>Tipo</th><th>Valor (R$)</th><th>% do Patrimônio</th><th>Patrimônio Total</th><th>Condição</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     }
 
     const reprovadosSemCobHtml = renderReprovadosSemCoberturaTab();
     lastRendaFixaData = data;
     lastRendaFixaClient = cid;
 
-    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${esc(cid)}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')">📋 Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')">🛡️ Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')">🏢 Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')">🏦 Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')">📈 Concentração &gt; 5%</button><button class="tab-btn" onclick="switchTab('conc3')">📈 Concentração &gt; 3%</button><button class="tab-btn" onclick="switchTab('reprovsemcob')">🚫 Reprovados / Sem Cobertura</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div><div id="tab-conc3" class="tab-content">${concentracao3Html}</div><div id="tab-reprovsemcob" class="tab-content">${reprovadosSemCobHtml}</div></div>`;
+    document.getElementById('resultSection').innerHTML = `<div class="result-panel"><div class="rp-header"><div><div class="rp-title">Análise de Renda Fixa</div><div class="rp-client">Cliente: ${clienteLabel}</div></div></div><div class="tab-bar"><button class="tab-btn active" onclick="switchTab('rendafixa')"><span class="material-symbols-outlined" style="font-size:14px;">assignment</span> Análise de Renda Fixa</button><button class="tab-btn" onclick="switchTab('fgc')"><span class="material-symbols-outlined" style="font-size:14px;">shield</span> Análise de Cobertura FGC</button><button class="tab-btn" onclick="switchTab('credprivado')"><span class="material-symbols-outlined" style="font-size:14px;">business</span> Análise de Crédito Privado</button><button class="tab-btn" onclick="switchTab('credbancario')"><span class="material-symbols-outlined" style="font-size:14px;">account_balance</span> Análise de Crédito Bancário</button><button class="tab-btn" onclick="switchTab('conc5')"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span> Concentração &gt; 5%</button><button class="tab-btn" onclick="switchTab('conc3')"><span class="material-symbols-outlined" style="font-size:14px;">trending_up</span> Concentração &gt; 3%</button><button class="tab-btn" onclick="switchTab('reprovsemcob')"><span class="material-symbols-outlined" style="font-size:14px;">block</span> Reprovados / Sem Cobertura</button><button class="tab-export-btn" onclick="exportarExcelAtual()" title="Exportar todas as abas para Excel"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Exportar Excel</button></div><div id="tab-rendafixa" class="tab-content active">${summary}<div class="asset-list">${rowsHtml}</div></div><div id="tab-fgc" class="tab-content">${fgcHtml}</div><div id="tab-credprivado" class="tab-content">${credPrivadoHtml}</div><div id="tab-credbancario" class="tab-content">${credBancarioHtml}</div><div id="tab-conc5" class="tab-content">${concentracao5Html}</div><div id="tab-conc3" class="tab-content">${concentracao3Html}</div><div id="tab-reprovsemcob" class="tab-content">${reprovadosSemCobHtml}</div></div>`;
 }
 
 function exportarExcelAtual() {
@@ -1895,7 +1908,7 @@ document.getElementById('hubBackBtn').addEventListener('click', () => {
     if (window.self !== window.top) {
         window.parent.postMessage({ action: 'hubNavigate', target: 'home' }, '*');
     } else {
-        window.location.href = "https://pabloads2020-lang.github.io/Dashboard-Ferramentas-Integradas/";
+        window.location.href = "https://pabloads2020-lang.github.io/Dashboard-Ferramentas-Integradas/dashboard.html";
     }
 });
 document.getElementById('hubNewTabBtn').addEventListener('click', () => {
@@ -1981,12 +1994,12 @@ function clearFile(target) {
         document.getElementById('clientsGrid').innerHTML = '';
         if (document.getElementById('clientsFooter')) document.getElementById('clientsFooter').textContent = '';
         setStatus('stPos', 'idle', 'Aguardando arquivo…', false);
-        document.getElementById('resultSection').innerHTML = '<div class="result-panel"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Carregue o arquivo de posições e selecione um cliente</div></div></div>';
+        document.getElementById('resultSection').innerHTML = '<div class="result-panel"><div class="empty"><div class="empty-icon"><span class="material-symbols-outlined" style="font-size:14px;">search</span></div><div class="empty-text">Carregue o arquivo de posições e selecione um cliente</div></div></div>';
         // Limpar dropdown de tipos
         document.getElementById('assetTypeDropdown').innerHTML = '';
         selectedAssetTypes = [];
         const toggleBtn = document.getElementById('assetTypeToggle');
-        if (toggleBtn) toggleBtn.textContent = '📊 Tipos de Ativos ▼';
+        if (toggleBtn) toggleBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">bar_chart</span> Tipos de Ativos ▼';
     }
 }
 
